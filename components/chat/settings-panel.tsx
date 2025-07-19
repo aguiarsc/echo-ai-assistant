@@ -204,7 +204,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               </div>
             </div>
             <div className="space-y-4">
-              <Label>Echo Avatar</Label>
+              <Label>altIA Avatar</Label>
               <div className="grid grid-cols-6 gap-4">
                 {avatars.map(avatar => (
                   <ThemeAvatar 
@@ -236,7 +236,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               <Label htmlFor="system-instruction">System Instruction</Label>
               <Textarea
                 id="system-instruction"
-                placeholder="e.g., You are a helpful assistant that specializes in writing fantasy novels."
+                placeholder="e.g., You are a professional business assistant that specializes in project management and document analysis."
                 value={globalSystemInstruction}
                 onChange={(e) => setGlobalSystemInstruction(e.target.value)}
                 className="min-h-[120px] text-sm"

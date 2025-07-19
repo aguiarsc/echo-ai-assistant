@@ -1,26 +1,26 @@
-# Project Overview: ECHO Novel Assistant
+# Project Overview: altIA Business Assistant
 
 ## Introduction
 
-ECHO Novel Assistant is an advanced AI-powered writing companion that revolutionizes creative writing workflows. Built specifically for novelists, writers, and creative professionals, it combines Google's Gemini AI models with an integrated file management system to provide context-aware AI assistance throughout the entire writing process.
+altIA Business Assistant is an advanced AI-powered business companion that revolutionizes business productivity workflows. Built specifically for project managers, HR professionals, legal teams, and business analysts, it combines Google's Gemini AI models with an integrated document management system to provide context-aware AI assistance throughout the entire business process.
 
 ## Key Features
 
-### AI-Powered Writing Assistant
-- **Smart File Editing**: Natural language file editing with visual diff review and accept/reject controls
-- **Advanced AI Thinking**: Real-time AI reasoning display with accurate duration tracking
-- **Context-Aware AI**: Add files as context to enhance AI conversations with your story details
-- **Intelligent File Creation**: AI creates new files based on your existing story context and natural language requests
+### AI-Powered Business Assistant
+- **Smart Document Editing**: Natural language document editing with visual diff review and accept/reject controls
+- **Advanced AI Analysis**: Real-time AI reasoning display with accurate duration tracking
+- **Context-Aware AI**: Add documents as context to enhance AI conversations with your business details
+- **Intelligent Document Creation**: AI creates new documents based on your existing business context and natural language requests
 - **Clean Content Generation**: AI generates clean, direct content without unwanted introductions or explanations
 - **Sequential AI Flow**: Thinking process displays first, then response streams naturally
 - **Multiple Gemini Models**: Support for Gemini 2.5 Flash and Gemini 2.0 Flash with proper thinking mode integration
 
-### Integrated File Management
-- **Built-in File System**: Create, edit, and organize your writing projects directly in the browser
-- **Hierarchical Organization**: Organize chapters, character sheets, world-building notes in folders
-- **Real-time Editing**: Edit files with auto-save functionality
-- **File Context Selection**: Choose which files to include as AI context
-- **Drag & Drop**: Intuitive file organization with drag-and-drop support
+### Integrated Document Management
+- **Built-in Document System**: Create, edit, and organize your business projects directly in the browser
+- **Hierarchical Organization**: Organize reports, policies, contracts, and meeting notes in folders
+- **Real-time Editing**: Edit documents with auto-save functionality
+- **Document Context Selection**: Choose which documents to include as AI context
+- **Drag & Drop**: Intuitive document organization with drag-and-drop support
 
 ### Advanced Chat Features
 - **Fluid Chat Experience**: Type while AI responds - no waiting required
@@ -32,18 +32,18 @@ ECHO Novel Assistant is an advanced AI-powered writing companion that revolution
 - **Copy & Share**: Easy copying of AI responses and conversations
 - **Smart Controls**: All file and context controls remain available during AI responses
 
-### Professional Writing Tools
-- **Project Organization**: Manage multiple writing projects with ease
-- **Character Development**: Maintain character sheets and development notes
-- **World Building**: Organize settings, locations, and story elements
-- **Plot Management**: Track story arcs, chapters, and narrative elements
+### Professional Business Tools
+- **Project Organization**: Manage multiple business projects with ease
+- **Team Management**: Maintain team roles and responsibility documentation
+- **Process Documentation**: Organize procedures, policies, and compliance materials
+- **Project Tracking**: Track milestones, deliverables, and project elements
 - **Research Integration**: Include research notes and references in your workflow
 
 ### User Experience
-- **Theme Support**: Dark and light modes optimized for long writing sessions
+- **Theme Support**: Dark and light modes optimized for long business sessions
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 - **Robust Storage**: IndexedDB-based persistence ensures your work is never lost
-- **Offline Capability**: Core file management works without internet connection
+- **Offline Capability**: Core document management works without internet connection
 
 ## Technology Stack
 

@@ -79,7 +79,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
         pdfOptions: {
           orientation: pdfOrientation,
           headerText: chat ? `Chat: ${chat.title}` : 'Chat Export',
-          footerText: 'Exported from Echo Novel Assistant'
+          footerText: 'Exported from altIA Business Assistant'
         }
       }
       
@@ -422,7 +422,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                     disabled={importing}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Select a JSON file exported from Echo Novel Assistant
+                    Select a JSON file exported from altIA Business Assistant
                   </p>
                 </div>
               </div>

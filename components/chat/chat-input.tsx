@@ -286,7 +286,7 @@ Provide only the edited content without any explanations.`
           const fileExt = fileName.split('.').pop()?.toLowerCase() || ''
           
           if (fileExt === 'md') {
-            contentPrompt = `Create markdown content for a file named "${fileName}". Extract any relevant topic information from the filename and expand on it creatively.`
+            contentPrompt = `Create professional markdown content for a business document named "${fileName}". Extract any relevant topic information from the filename and expand on it with appropriate business structure and formatting.`
           } else if (['txt', 'text'].includes(fileExt)) {
             contentPrompt = `Create text content for "${fileName}". If the filename suggests a specific topic, please focus on that.`
           } else {

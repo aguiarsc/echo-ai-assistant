@@ -51,7 +51,7 @@ export default function LandingPage() {
               className="text-7xl md:text-9xl font-bold"
               colors={{ first: "#3B82F6", second: "#8B5CF6" }}
             >
-              ECHO
+              altIA
             </SparklesText>
           </div>
 
@@ -88,7 +88,7 @@ export default function LandingPage() {
                 className="text-lg px-12 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-2xl"
               >
                 <RocketIcon className="mr-2 h-5 w-5" />
-                Launch ECHO Now
+                Launch now
                 <ArrowRightIcon className="ml-2 h-5 w-5" />
               </Button>
             </div>

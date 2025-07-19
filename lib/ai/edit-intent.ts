@@ -13,7 +13,7 @@ export interface EditIntentResult {
  */
 export function detectFileEditIntent(prompt: string): EditIntentResult | null {
   // First check if this is a file creation intent - if so, don't treat as edit
-  const creationKeywords = /\b(create|make|start|begin|write|draft|compose|prepare|produce|generate|new)\s+(?:a|the)?\s*(?:file|document|note|story|chapter)/i;
+  const creationKeywords = /\b(create|make|start|begin|write|draft|compose|prepare|produce|generate|new)\s+(?:a|the)?\s*(?:file|document|note|report|memo|policy|contract|proposal|plan|analysis)/i;
   if (creationKeywords.test(prompt)) {
     return null;
   }

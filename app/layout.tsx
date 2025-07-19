@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ECHO",
-  description: "ECHO - An advanced, Gemini based, AI assistant with file system capabilities",
+  title: "altIA",
+  description: "altIA - An advanced, Gemini based, AI assistant with file system capabilities",
 };
 
 export const viewport = {

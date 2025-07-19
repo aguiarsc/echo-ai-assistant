@@ -1,8 +1,8 @@
-# File Management
+# Document Management
 
 ## Overview
 
-ECHO Novel Assistant provides a comprehensive file management system specifically designed for creative writing projects. Writers can create, edit, and organize their novels, character sheets, world-building notes, and research materials directly within the browser. The system integrates seamlessly with AI features to provide context-aware assistance throughout the writing process.
+altIA Business Assistant provides a comprehensive document management system specifically designed for business productivity projects. Business professionals can create, edit, and organize their reports, policies, contracts, meeting notes, and project materials directly within the browser. The system integrates seamlessly with AI features to provide context-aware assistance throughout the business process.
 1. Operates entirely client-side using browser storage
 2. Provides a familiar tree-based interface for file navigation
 3. Integrates directly with the AI chat functionality

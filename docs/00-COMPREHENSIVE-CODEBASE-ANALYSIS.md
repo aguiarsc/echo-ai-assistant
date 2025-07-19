@@ -1,8 +1,8 @@
-# ECHO Novel Assistant - Complete Codebase Analysis & Macro Knowledge
+# altIA Business Assistant - Complete Codebase Analysis & Macro Knowledge
 
 ## Executive Summary
 
-Echo Novel Assistant is a sophisticated AI-powered writing companion built with Next.js 15, React 19, TypeScript, and TailwindCSS 4. It combines advanced AI capabilities with a comprehensive file management system, specifically optimized for novel writing workflows. The application features Google Gemini AI integration, persistent storage via IndexedDB, and a modern, responsive interface.
+altIA Business Assistant is a sophisticated AI-powered business companion built with Next.js 15, React 19, TypeScript, and TailwindCSS 4. It combines advanced AI capabilities with a comprehensive document management system, specifically optimized for business productivity workflows. The application features Google Gemini AI integration, persistent storage via IndexedDB, and a modern, responsive interface.
 
 ## 🏗️ Architecture Overview
 
@@ -17,7 +17,7 @@ Echo Novel Assistant is a sophisticated AI-powered writing companion built with 
 
 ### Project Structure
 ```
-echo-novel-assistant/
+altia-business-assistant/
 ├── app/                    # Next.js 15 App Router
 │   ├── api/               # API routes (Gemini, file operations)
 │   ├── landing-page/      # Marketing landing page
@@ -257,18 +257,18 @@ echo-novel-assistant/
 - Proper event listener cleanup
 - Optimized re-renders with Zustand
 
-## 🎯 Novel Writing Optimizations
+## 🎯 Business Productivity Optimizations
 
 ### Content Generation
-- Higher temperature (0.9) for creativity
-- Thinking mode for narrative planning
-- File context for character/world consistency
+- Moderate temperature (0.7) for professional consistency
+- Thinking mode for business analysis and planning
+- Document context for project/policy consistency
 - Markdown support for formatting
 
 ### Workflow Features
 - Hierarchical project organization
-- Chapter/scene file management
-- Character sheet and worldbuilding support
+- Report/document file management
+- Policy and compliance document support
 - Context-aware AI assistance
 - Export capabilities
 
@@ -365,11 +365,11 @@ echo-novel-assistant/
 4. **Performance focus**: Debounced updates and efficient rendering
 5. **User experience**: Responsive design and accessibility
 
-### Novel Writing Focus
-1. **Context awareness**: File system integration with AI
-2. **Creative parameters**: Optimized AI settings for writing
+### Business Productivity Focus
+1. **Context awareness**: Document system integration with AI
+2. **Professional parameters**: Optimized AI settings for business productivity
 3. **Workflow optimization**: Hierarchical organization
-4. **Content generation**: Smart file creation and management
+4. **Content generation**: Smart document creation and management
 5. **Persistence**: Reliable data storage and recovery
 
-This comprehensive analysis represents the complete understanding of the Echo Novel Assistant codebase, covering every aspect from low-level implementation details to high-level architectural decisions. The system is well-designed for its intended use case of AI-assisted novel writing with a strong focus on user privacy, performance, and creative workflow optimization.
+This comprehensive analysis represents the complete understanding of the altIA Business Assistant codebase, covering every aspect from low-level implementation details to high-level architectural decisions. The system is well-designed for its intended use case of AI-assisted business productivity with a strong focus on user privacy, performance, and professional workflow optimization.

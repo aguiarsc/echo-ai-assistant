@@ -2,7 +2,7 @@
 
 ## Overview
 
-ECHO provides a rich chat experience with several advanced features designed to enhance AI interactions. These features include thinking mode, streaming responses, token tracking, file context, and more.
+altIA provides a rich chat experience with several advanced features designed to enhance AI interactions for business productivity. These features include thinking mode, streaming responses, token tracking, document context, and more.
 
 ## Core Chat Features
 

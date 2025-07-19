@@ -470,7 +470,7 @@ export function convertMarkdownToHtml(content: string, title: string): string {
 </head>
 <body>
   <div class="export-info">
-    Exported from Echo Novel Assistant on ${new Date().toLocaleString()}
+    Exported from altIA Business Assistant on ${new Date().toLocaleString()}
   </div>
   ${html}
 </body>

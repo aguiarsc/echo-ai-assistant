@@ -13,7 +13,7 @@ export interface FileIntentResult {
 export function detectFileCreationIntent(prompt: string): FileIntentResult | null {
   // First attempt: explicit file creation patterns with filename extensions
   const creationVerbs = '(?:create|make|start|begin|write|draft|compose|prepare|produce|generate|open|save)';
-  const fileTypes = '(?:file|document|note|story|chapter|essay|article|post|entry|text|page|draft)';
+  const fileTypes = '(?:file|document|note|report|memo|policy|contract|proposal|plan|analysis|summary|template|checklist|agenda|minutes)';
   const nameIndicators = '(?:called|named|titled|with name|with title|with filename)?';
 
   // More flexible regex with multiple patterns

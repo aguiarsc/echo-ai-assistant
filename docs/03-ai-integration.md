@@ -2,7 +2,7 @@
 
 ## Overview
 
-ECHO Novel Assistant leverages Google's Gemini API to provide powerful AI capabilities specifically designed for creative writing workflows. The integration focuses on providing natural, context-aware responses while supporting advanced features like intelligent file creation, streaming responses, thinking mode, and comprehensive file context awareness.
+altIA Business Assistant leverages Google's Gemini API to provide powerful AI capabilities specifically designed for business productivity workflows. The integration focuses on providing natural, context-aware responses while supporting advanced features like intelligent document creation, streaming responses, thinking mode, and comprehensive document context awareness.
 
 ## Core Components
 

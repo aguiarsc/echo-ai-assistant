@@ -263,7 +263,7 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
         {!isThinking && (
           <ThemeAvatar 
             src={isUser ? userAvatar : geminiAvatar} 
-            alt={isUser ? "User" : "Echo"} 
+            alt={isUser ? "User" : "altIA"} 
             fallback={isUser ? "U" : "AI"}
             className={cn(
               "h-8 w-8 ring-2 shrink-0",
@@ -275,7 +275,7 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
         <div className="flex flex-col flex-1 min-w-0">
           {!isThinking && (
             <div className="text-sm font-medium mb-1 text-foreground">
-              {isUser ? "You" : "Echo"}
+              {isUser ? "You" : "altIA"}
               {message.tokenCount && (
                 <span className="ml-2 text-xs font-normal text-muted-foreground">
                   ({message.tokenCount} tokens)

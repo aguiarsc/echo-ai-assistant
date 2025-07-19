@@ -1,0 +1,1 @@
+Add to Settings panel some options like: streaming speed for AI responses, workMode (business/technical/standard), business-focused AI presets, and professional templates.

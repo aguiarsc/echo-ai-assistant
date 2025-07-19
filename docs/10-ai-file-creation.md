@@ -1,8 +1,8 @@
-# AI File Creation System
+# AI Document Creation System
 
 ## Overview
 
-The AI File Creation System is one of ECHO Novel Assistant's most powerful features, allowing writers to create new files through natural language commands while leveraging existing story context. This system was recently enhanced with improved context awareness, clean content generation, and sophisticated visual feedback.
+The AI Document Creation System is one of altIA Business Assistant's most powerful features, allowing business professionals to create new documents through natural language commands while leveraging existing business context. This system was recently enhanced with improved context awareness, clean content generation, and sophisticated visual feedback.
 
 ## Core Features
 
@@ -25,10 +25,10 @@ export function detectFileCreationIntent(prompt: string): FileIntentResult | nul
 
 The system integrates with the file context system to ensure new files are consistent with existing story elements:
 
-- **Character Consistency**: Maintains character details from selected files
-- **Setting Continuity**: Preserves world-building elements
-- **Plot Coherence**: Ensures new content fits existing story structure
-- **Style Matching**: Adapts to the writing style of existing files
+- **Project Consistency**: Maintains project details from selected documents
+- **Policy Continuity**: Preserves business process elements
+- **Content Coherence**: Ensures new content fits existing business structure
+- **Style Matching**: Adapts to the professional style of existing documents
 
 ### Clean Content Generation
 
@@ -109,27 +109,27 @@ function cleanFileContent(content: string): string {
 
 ## Usage Examples
 
-### Basic File Creation
+### Basic Document Creation
 ```
-User: "Create a character sheet for Sarah"
-Result: Creates "character-sheet.md" with character details
+User: "Create a project plan for the Q2 initiative"
+Result: Creates "project-plan.md" with project details
 ```
 
 ### Context-Aware Creation
 ```
-Context: story.md (contains "Jake is a detective")
-User: "Create a new chapter about Jake's investigation"
-Result: Creates "chapter.md" with content about Jake as a detective
+Context: team-structure.md (contains "Sarah is the project manager")
+User: "Create a new meeting agenda for Sarah's team"
+Result: Creates "meeting-agenda.md" with content relevant to Sarah's team
 ```
 
 ### Specific Filename
 ```
-User: "Generate outline.md with a story outline"
-Result: Creates "outline.md" with structured story outline
+User: "Generate policy-document.md with compliance guidelines"
+Result: Creates "policy-document.md" with structured compliance outline
 ```
 
 ### Complex Requests
 ```
-User: "I need a file called world-building.md that describes the fantasy world from my story"
-Result: Creates "world-building.md" using context from existing story files
+User: "I need a file called employee-handbook.md that describes our remote work policies"
+Result: Creates "employee-handbook.md" using context from existing policy documents
 ```

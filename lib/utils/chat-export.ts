@@ -131,7 +131,7 @@ export async function exportChat(
         await exportMarkdownToPdf(markdown, {
           filename,
           headerText: `Chat: ${chat.title}`,
-          footerText: `Exported from Echo Novel Assistant`,
+          footerText: `Exported from altIA Business Assistant`,
           ...options.pdfOptions
         })
         break

@@ -47,27 +47,27 @@ export interface GenerationParams {
   thinkingBudget?: number;
   includeSummaries?: boolean;
   safetySettings?: SafetySetting[];
-  writingMode?: 'standard' | 'novel' | 'concise'; // Track the current writing style mode
+  workMode?: 'standard' | 'business' | 'technical' | 'concise'; // Track the current work style mode
 }
 
 export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
-  // Higher temperature (0.9) for more creative, diverse outputs in novel writing
-  temperature: 0.9,
-  // Higher top_p for more diverse word selection
-  topP: 0.98,
-  // Higher top_k to allow consideration of more creative options
-  topK: 60,
-  // Maximum output tokens for longer, more detailed novel content
-  maxOutputTokens: 8192,
-  // Enable thinking for better narrative planning and character development
+  // Moderate temperature (0.7) for balanced creativity and consistency in business contexts
+  temperature: 0.7,
+  // Balanced top_p for reliable yet flexible responses
+  topP: 0.95,
+  // Moderate top_k for consistent professional output
+  topK: 40,
+  // Sufficient tokens for detailed business documents and analysis
+  maxOutputTokens: 4096,
+  // Enable thinking for better business analysis and decision-making
   thinkingEnabled: true,
   // Dynamic thinking budget - let the model decide based on complexity (-1)
   // For manual control: 1024-8192 for Flash, 128-32768 for Pro
   thinkingBudget: -1,
-  // Show summaries of thinking process for narrative structure insights
+  // Show summaries of thinking process for business analysis insights
   includeSummaries: true,
-  // Novel writing mode enabled by default
-  writingMode: 'novel',
+  // Business mode enabled by default
+  workMode: 'business',
   safetySettings: [
     // Default to BLOCK_NONE as specified for the newer models
     {

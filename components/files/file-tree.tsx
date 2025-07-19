@@ -726,8 +726,8 @@ export function FileTree({ parentId = null, level = 0, className }: FileTreeProp
                     <Command className="h-3 w-3 mr-1 text-primary" /> 
                     Basic File Creation
                   </div>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">Create a new file called chapter1.md with a story about dragons</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Make a file named character-sheet.md about a wizard protagonist</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">Create a new file called project-plan.md with a timeline for Q2</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Make a file named employee-handbook.md about remote work policies</code>
                 </div>
                 
                 <div className="space-y-1">
@@ -735,8 +735,8 @@ export function FileTree({ parentId = null, level = 0, className }: FileTreeProp
                     <Command className="h-3 w-3 mr-1 text-primary" /> 
                     Direct File Mention
                   </div>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">story.md with a tale about knights</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">worldbuilding.md containing details about a fantasy kingdom</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">contract-template.md with standard terms and conditions</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">compliance-checklist.md containing data privacy requirements</code>
                 </div>
                 
                 <div className="space-y-1">
@@ -744,8 +744,8 @@ export function FileTree({ parentId = null, level = 0, className }: FileTreeProp
                     <Command className="h-3 w-3 mr-1 text-primary" /> 
                     Conversational Requests
                   </div>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">I need a file named outline.md for my fantasy novel</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Could you please create characters.md with descriptions of three protagonists?</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">I need a file named meeting-agenda.md for the quarterly review</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Could you please create team-roles.md with descriptions of project responsibilities?</code>
                 </div>
               </div>
             </div>
@@ -808,8 +808,8 @@ export function FileTree({ parentId = null, level = 0, className }: FileTreeProp
                     <Command className="h-3 w-3 mr-1 text-primary" /> 
                     Basic File Editing
                   </div>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">edit chapter1.md to add more dialogue</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">modify character-sheet.md by improving the character descriptions</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">edit project-plan.md to add more milestones</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">modify employee-handbook.md by improving the policy descriptions</code>
                 </div>
                 
                 <div className="space-y-1">
@@ -826,8 +826,8 @@ export function FileTree({ parentId = null, level = 0, className }: FileTreeProp
                     <Command className="h-3 w-3 mr-1 text-primary" /> 
                     Specific Modifications
                   </div>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">edit outline.md adding a new chapter about the final battle</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">update characters.md removing outdated character traits</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">edit policy-document.md adding new compliance requirements</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">update team-roles.md removing outdated responsibilities</code>
                 </div>
               </div>
             </div>
