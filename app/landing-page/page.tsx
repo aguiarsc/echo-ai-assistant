@@ -4,6 +4,8 @@ import { TextAnimate } from "@/components/magicui/text-animate";
 import { Particles } from "@/components/magicui/particles";
 import { SparklesText } from "@/components/magicui/sparkles-text";
 import { MorphingText } from "@/components/magicui/morphing-text";
+import NeuroCanvas from "@/components/effects/NeuroCanvas";
+import SparkleButton from "@/components/effects/SparkleButton";
 import {
   RocketIcon,
   ArrowRightIcon
@@ -30,29 +32,28 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#151912' }}>
+      {/* Neural Canvas Background */}
+      <NeuroCanvas />
+      
       {/* Particles Background */}
       <Particles
         className="absolute inset-0 -z-10"
-        quantity={150}
+        quantity={100}
         ease={80}
-        color={theme === "dark" ? "#ffffff" : "#000000"}
-        size={0.4}
+        color="#FFF6F7"
+        size={0.3}
       />
 
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-        <Particles className="absolute inset-0" quantity={50} ease={80} color="#8B5CF6" size={0.4} />
-
         <div className="max-w-6xl mx-auto text-center relative z-10">
           {/* Main Title */}
           <div className="space-y-8"> {/* changed from 12 to 8 */}
-            <SparklesText
-              className="text-7xl md:text-9xl font-bold"
-              colors={{ first: "#3B82F6", second: "#8B5CF6" }}
-            >
-              altIA
-            </SparklesText>
+            <div className="text-7xl md:text-9xl font-bold">
+              <span className="text-[#2E4BC6]">alt</span>
+              <span className="text-[#FFF6F7]">IA</span>
+            </div>
           </div>
 
           {/* Morphing Text Showcase */}
@@ -65,32 +66,18 @@ export default function LandingPage() {
                 "Advanced Chat Features",
                 "Thinking Mode Transparency"
               ]}
-              className="text-3xl md:text-5xl font-bold text-primary"
+              className="text-3xl md:text-5xl font-bold text-[#FFF6F7]"
             />
           </div>
-
-          {/* Animated Sentence (More space above) */}
-          <div className="pt-10 md:pt-14"> {/* added container with more top padding */}
-            <TextAnimate
-              animation="blurInUp"
-              by="word"
-              className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed"
-            >
-              The AI-powered productivity assistant that streamlines content creation, documentation, and communication workflows for modern enterprises
-            </TextAnimate>
-          </div>
           {/* CTA Buttons */}
-          <div className="pt-16 md:pt-20">
+          <div className="pt-36 md:pt-48">
             <div className="relative inline-block">
-              <Button
+              <SparkleButton
                 onClick={handleGetStarted}
-                size="lg"
-                className="text-lg px-12 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-2xl"
+                className="relative z-20 pointer-events-auto"
               >
-                <RocketIcon className="mr-2 h-5 w-5" />
                 Launch now
-                <ArrowRightIcon className="ml-2 h-5 w-5" />
-              </Button>
+              </SparkleButton>
             </div>
           </div>
 
@@ -99,7 +86,7 @@ export default function LandingPage() {
             <TextAnimate
               animation="fadeIn"
               delay={0.8}
-              className="text-sm text-muted-foreground/60"
+              className="text-sm text-[#FFF6F7] opacity-60"
             >
               No installation required • Works in any modern browser • Your data stays private
             </TextAnimate>
