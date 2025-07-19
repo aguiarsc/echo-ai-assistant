@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" fill="none" viewBox="0 0 128 128" id="artificial-intelligence">
+  <path stroke="#1B1B1B" stroke-linecap="round" stroke-width="6" d="M46 76L58.0844 52.2089C58.1495 52.0807 58.281 52 58.4248 52V52C58.5725 52 58.7069 52.0852 58.77 52.2187L70 76M52 70H63M81 76V52M107 80H112M48 107L48 112"></path>
+  <path stroke="#1B1B1B" stroke-linecap="round" stroke-linejoin="round" stroke-width="6" d="M21 80H16"></path>
+  <path stroke="#1B1B1B" stroke-linecap="round" stroke-width="6" d="M48 20L48 15"></path>
+  <path stroke="#1B1B1B" stroke-linecap="round" stroke-linejoin="round" stroke-width="6" d="M107 47H112"></path>
+  <path stroke="#1B1B1B" stroke-linecap="round" stroke-width="6" d="M80 107L80 112M107 64H112M63 107L63 112M21 64H16M63 20L63 15"></path>
+  <path stroke="#1B1B1B" stroke-linecap="round" stroke-linejoin="round" stroke-width="6" d="M21 47H16"></path>
+  <path stroke="#1B1B1B" stroke-linecap="round" stroke-width="6" d="M80 20L80 15"></path>
+  <rect width="66" height="66" x="31" y="31" stroke="#1B1B1B" stroke-width="6" rx="10"></rect>
+</svg>
