@@ -7,8 +7,8 @@ import { useFileContextStore } from "@/lib/files/context-store";
 import { useFilesStore, FileNode } from "@/lib/files/store";
 import { generateFileContextInstruction, convertFileToContext, generateFileContentText } from "@/lib/gemini/file-context-adapter";
 
-// Speed of the typing effect in milliseconds per character. Lower is faster.
-const TYPING_SPEED = 2;
+// Default typing speed fallback (will be overridden by generationParams.streamingSpeed)
+const DEFAULT_TYPING_SPEED = 25;
 
 export function useChat() {
   const {
@@ -191,7 +191,7 @@ export function useChat() {
           setIsStreaming(false);
           abortControllerRef.current = null;
         }
-      }, TYPING_SPEED);
+      }, generationParams.streamingSpeed || DEFAULT_TYPING_SPEED);
 
       // Prepare enhanced system instruction with file context if needed
       let enhancedSystemInstruction = globalSystemInstruction || "";

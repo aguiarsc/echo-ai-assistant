@@ -14,8 +14,9 @@ import { useChatStore } from "@/lib/gemini/store"
 import { useSecureApiKey } from "@/hooks/use-secure-api-key"
 import { useToast } from "@/components/ui/use-toast"
 import { GEMINI_MODELS, DEFAULT_GENERATION_PARAMS, HarmBlockThreshold, HarmCategory } from "@/lib/gemini"
+import { PROMPT_PRESETS } from "@/lib/ai/presets"
 import { ThemeAvatar } from "@/components/ui/theme-avatar"
-import { ExternalLink, Loader2, CheckCircle, XCircle } from "lucide-react"
+import { ExternalLink, Loader2, CheckCircle, XCircle, Zap, Brain, Settings2 } from "lucide-react"
 
 interface SettingsPanelProps {
   onClose?: () => void
@@ -111,8 +112,9 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
 
   return (
     <Tabs defaultValue="general">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-5">
         <TabsTrigger value="general">General</TabsTrigger>
+        <TabsTrigger value="ai-presets">AI Presets</TabsTrigger>
         <TabsTrigger value="appearance">Appearance</TabsTrigger>
         <TabsTrigger value="generation">Generation</TabsTrigger>
         <TabsTrigger value="safety">Safety</TabsTrigger>
@@ -177,6 +179,75 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               )}
               Save Changes
             </Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="ai-presets">
+        <Card>
+          <CardContent className="space-y-6 pt-6">
+
+            {/* Work Mode Selection */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <Settings2 className="h-4 w-4" />
+                Work Mode
+              </Label>
+              <Select
+                value={generationParams.workMode || 'business'}
+                onValueChange={(value: 'standard' | 'business' | 'technical' | 'concise') => {
+                  setGenerationParams({ workMode: value });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select work mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="business">Business - Professional and structured responses</SelectItem>
+                  <SelectItem value="technical">Technical - Detailed technical explanations</SelectItem>
+                  <SelectItem value="standard">Standard - Balanced general responses</SelectItem>
+                  <SelectItem value="concise">Concise - Brief and to-the-point answers</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Work mode affects the AI's response style and level of detail
+              </p>
+            </div>
+
+            {/* AI Presets */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <Brain className="h-4 w-4" />
+                AI Assistant Presets
+              </Label>
+              <div className="grid gap-3">
+                {PROMPT_PRESETS.map((preset) => {
+                  const isActive = globalSystemInstruction === preset.prompt;
+                  return (
+                    <div
+                      key={preset.id}
+                      className={`p-4 rounded-lg border cursor-pointer transition-all hover:bg-muted/50 ${
+                        isActive ? 'border-primary bg-primary/5' : 'border-border'
+                      }`}
+                      onClick={() => setGlobalSystemInstruction(preset.prompt)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <h4 className="font-medium text-sm">{preset.name}</h4>
+                          <p className="text-xs text-muted-foreground">{preset.description}</p>
+                        </div>
+                        {isActive && (
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button onClick={onClose}>Close</Button>
           </CardFooter>
         </Card>
       </TabsContent>
@@ -335,6 +406,34 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   value={[generationParams.maxOutputTokens || 2048]}
                   onValueChange={(value: number[]) => setGenerationParams({ maxOutputTokens: value[0] })}
                 />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2" htmlFor="streaming-speed">
+                    <Zap className="h-4 w-4" />
+                    Streaming Speed: {generationParams.streamingSpeed}ms
+                  </Label>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setGenerationParams({ streamingSpeed: DEFAULT_GENERATION_PARAMS.streamingSpeed })}
+                    className="h-7 text-xs"
+                  >
+                    Reset
+                  </Button>
+                </div>
+                <Slider
+                  id="streaming-speed"
+                  min={0}
+                  max={50}
+                  step={5}
+                  value={[generationParams.streamingSpeed || 25]}
+                  onValueChange={(value: number[]) => setGenerationParams({ streamingSpeed: value[0] })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Controls typing speed: 0ms = instant, 25ms = moderate, 50ms = slow
+                </p>
               </div>
               
               <div className="space-y-2">

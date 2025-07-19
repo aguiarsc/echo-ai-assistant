@@ -48,6 +48,7 @@ export interface GenerationParams {
   includeSummaries?: boolean;
   safetySettings?: SafetySetting[];
   workMode?: 'standard' | 'business' | 'technical' | 'concise'; // Track the current work style mode
+  streamingSpeed?: number; // Delay in milliseconds between characters (0-200ms)
 }
 
 export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
@@ -68,6 +69,8 @@ export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
   includeSummaries: true,
   // Business mode enabled by default
   workMode: 'business',
+  // Moderate streaming speed for professional readability (25ms between characters)
+  streamingSpeed: 25,
   safetySettings: [
     // Default to BLOCK_NONE as specified for the newer models
     {
