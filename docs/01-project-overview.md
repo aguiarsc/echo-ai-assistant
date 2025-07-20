@@ -32,6 +32,14 @@ altIA Business Assistant is an advanced AI-powered business companion that revol
 - **Copy & Share**: Easy copying of AI responses and conversations
 - **Smart Controls**: All file and context controls remain available during AI responses
 
+### Calendar System
+- **AI-Powered Scheduling**: Create and manage events through natural language commands
+- **Visual Calendar Interface**: Interactive calendar with visual event indicators
+- **Smart Event Management**: Update and search events via chat or calendar UI
+- **Safety-First Design**: Manual-only deletion policy prevents accidental data loss
+- **Business Integration**: Seamlessly integrates with document workflows and project management
+- **Persistent Storage**: Reliable event storage with automatic synchronization
+
 ### Professional Business Tools
 - **Project Organization**: Manage multiple business projects with ease
 - **Team Management**: Maintain team roles and responsibility documentation

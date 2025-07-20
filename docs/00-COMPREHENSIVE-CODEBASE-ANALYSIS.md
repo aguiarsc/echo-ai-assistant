@@ -23,6 +23,7 @@ altia-business-assistant/
 │   ├── landing-page/      # Marketing landing page
 │   └── globals.css        # Global styles with TailwindCSS 4
 ├── components/            # React components
+│   ├── calendar/         # Calendar system components
 │   ├── chat/             # Chat interface components
 │   ├── files/            # File management components
 │   ├── magicui/          # Animated UI components
@@ -31,6 +32,7 @@ altia-business-assistant/
 ├── lib/                  # Core business logic
 │   ├── ai/              # AI intent detection & presets
 │   ├── api/             # API helpers
+│   ├── calendar/        # Calendar system logic
 │   ├── dexie/           # IndexedDB persistence layer
 │   ├── files/           # File system management
 │   ├── gemini/          # Gemini AI integration
@@ -163,6 +165,100 @@ altia-business-assistant/
 - Typing effect implementation
 - Error handling and recovery
 - Token counting and title generation
+
+## 📅 Calendar System Architecture
+
+### Calendar Store (`lib/calendar/store.ts`)
+
+**State Management**:
+- Zustand store with Dexie persistence for calendar events
+- Event CRUD operations (Create, Read, Update, Delete)
+- Date range filtering and event retrieval
+- Real-time synchronization between UI and database
+- Automatic event sorting by date
+
+**Core Operations**:
+- `addEvent`: Creates new calendar events with validation
+- `updateEvent`: Modifies existing events with partial updates
+- `deleteEvent`: Removes events (manual-only for safety)
+- `loadEvents`: Retrieves all events from persistent storage
+- `getEventsForDateRange`: Filters events by date range
+
+### Calendar Intent Detection (`lib/ai/calendar-intent.ts`)
+
+**Natural Language Processing**:
+- Regex-based pattern matching for calendar commands
+- Support for create, update, list, and search operations
+- Advanced date/time parsing (12-hour, 24-hour, relative dates)
+- Flexible command recognition ("Schedule meeting tomorrow at 2 PM")
+- Safety feature: Delete operations explicitly disabled
+
+**Intent Categories**:
+- **Create**: "Schedule a meeting with the team tomorrow at 2 PM"
+- **Update**: "Reschedule the team standup to 10 AM"
+- **List**: "Show me my calendar for today"
+- **Search**: "Find all meetings with John"
+
+### Calendar Functions (`lib/calendar/functions.ts`)
+
+**Gemini API Integration**:
+- Function calling implementations for calendar operations
+- Comprehensive error handling and validation
+- Smart search with flexible matching algorithms
+- Date validation and format conversion
+- Success/failure response formatting for chat integration
+
+**Function Definitions**:
+- `create_calendar_event`: Creates events with title, dates, description
+- `update_calendar_event`: Updates events by ID with partial data
+- `list_calendar_events`: Returns events for specified date ranges
+- `search_calendar_events`: Flexible search with word and time matching
+
+### Calendar UI (`components/calendar/calendar-tab.tsx`)
+
+**Visual Interface**:
+- Interactive calendar component with shadcn/ui integration
+- Visual day indicators for days with events (colored background + dot)
+- Event creation and editing dialogs
+- Comprehensive Calendar FAQ with usage examples
+- Professional business-focused design
+
+**Key Features**:
+- Click-to-view events for specific dates
+- Manual event management (create, edit, delete)
+- Visual feedback for event-containing days
+- Responsive design for all screen sizes
+- Integration with chat-based calendar commands
+
+**Safety Design**:
+- Manual-only deletion policy prevents accidental data loss
+- Clear visual confirmation for all destructive operations
+- FAQ explicitly explains safety policies
+- Separation of AI assistance from critical operations
+
+### Calendar Database Schema
+
+**Event Storage**:
+```typescript
+interface CalendarEvent {
+  id: string
+  title: string
+  description?: string
+  startDate: Date
+  endDate: Date
+  allDay: boolean
+  color?: string
+  createdAt: Date
+  updatedAt: Date
+}
+```
+
+**Database Integration**:
+- IndexedDB storage via Dexie
+- Automatic date serialization/deserialization
+- Transaction support for data integrity
+- Efficient querying by date ranges
+- Persistent storage across browser sessions
 
 ## 🗄️ Data Persistence Layer
 

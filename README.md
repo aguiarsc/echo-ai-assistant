@@ -8,6 +8,7 @@ altIA transforms the business workflow experience by combining the power of Goog
 
 - **🧠 AI-Powered Document Editing**: Smart content editing with visual diff review
 - **📁 Professional Document System**: Complete in-browser document management with drag & drop
+- **📅 Intelligent Calendar System**: AI-powered scheduling with visual calendar interface
 - **💭 Advanced AI Analysis**: Real-time AI reasoning display with accurate timing
 - **🔄 Seamless Context Integration**: Use your business documents as context for AI conversations
 - **⚡ Fluid Chat Experience**: Type while AI responds, no waiting required
@@ -28,6 +29,13 @@ Built with Next.js 15, React 19, TypeScript, and TailwindCSS 4, altIA delivers a
 - **🔄 Context Selection**: Choose documents as context for AI conversations
 - **📋 Document Creation FAQ**: Built-in help for AI document creation commands
 
+### 📅 Intelligent Calendar System
+- **🤖 AI-Powered Scheduling**: Create and manage events through natural language commands
+- **📅 Visual Calendar Interface**: Interactive calendar with visual event indicators
+- **🔍 Smart Event Management**: Update and search events via chat or calendar UI
+- **🔒 Safety-First Design**: Manual-only deletion policy prevents accidental data loss
+- **📊 Business Integration**: Seamlessly integrates with document workflows
+
 ### 💬 Advanced Chat Experience
 - **⌨️ Type While AI Responds**: No waiting - prepare your next message during AI generation
 - **🎭 Sequential AI Flow**: Thinking appears first, then response streams naturally
@@ -43,6 +51,7 @@ Built with Next.js 15, React 19, TypeScript, and TailwindCSS 4, altIA delivers a
 ## 🆕 What's New
 
 ### Latest Improvements (January 2025)
+- **📅 NEW: Calendar System**: Complete calendar management with AI-powered scheduling
 - **✨ Enhanced AI Thinking**: Professional AI reasoning display with real-time duration tracking
 - **🔧 Smart Document Editing**: Visual diff interface for AI-powered content editing
 - **⚡ Improved Chat UX**: Type while AI responds, no more waiting for responses
@@ -67,6 +76,7 @@ Comprehensive documentation covering architecture, features, and implementation 
 - [Chat Features](/docs/08-chat-features.md) - Advanced chat functionality and streaming
 - [Theming System](/docs/09-theming-system.md) - Theme implementation and customization
 - [AI File Creation](/docs/10-ai-file-creation.md) - AI-powered file generation system
+- [Calendar System](/docs/11-calendar-system.md) - Complete calendar management with AI integration
 
 ### 🔍 Reference
 - [Comprehensive Codebase Analysis](/docs/00-COMPREHENSIVE-CODEBASE-ANALYSIS.md) - Complete technical overview
@@ -85,6 +95,14 @@ modify contract-template.md to include new compliance requirements
 create meeting-agenda.md for the quarterly review
 generate policy-document.md for data privacy compliance
 make project-proposal.md for the new client initiative
+```
+
+### AI Calendar Management
+```
+Schedule a meeting with the team tomorrow at 2 PM
+Show me my calendar for today
+Reschedule the team standup to 10 AM
+Find all meetings with John
 ```
 
 ### Context-Aware Business Conversations
