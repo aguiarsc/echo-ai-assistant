@@ -236,29 +236,6 @@ export const calendarFunctions = {
     }
   },
 
-  delete_calendar_event: async (args: { eventId: string }) => {
-    try {
-      const { events } = useCalendarStore.getState();
-      const existingEvent = events.find(e => e.id === args.eventId);
-      
-      if (!existingEvent) {
-        throw new Error('Event not found');
-      }
-      
-      await useCalendarStore.getState().deleteEvent(args.eventId);
-      
-      return {
-        success: true,
-        message: `Calendar event "${existingEvent.title}" deleted successfully`
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message: `Failed to delete calendar event: ${error.message}`
-      };
-    }
-  },
-
   list_calendar_events: async (args: { startDate: string; endDate: string }) => {
     try {
       const startDateObj = new Date(args.startDate);
@@ -310,10 +287,40 @@ export const calendarFunctions = {
       const { events } = useCalendarStore.getState();
       const query = args.query.toLowerCase();
       
-      const matchingEvents = events.filter(event => 
-        event.title.toLowerCase().includes(query) ||
-        (event.description && event.description.toLowerCase().includes(query))
-      );
+      // More flexible matching logic
+      const queryWords = query.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+      
+      const matchingEvents = events.filter(event => {
+        const eventTitle = event.title.toLowerCase();
+        const eventDesc = event.description?.toLowerCase() || '';
+        
+        // Direct substring match
+        if (eventTitle.includes(query) || eventDesc.includes(query)) {
+          return true;
+        }
+        
+        // Word-based matching - if most words match
+        const titleWords = eventTitle.split(/\s+/);
+        const matchingWords = queryWords.filter(qWord => 
+          titleWords.some(tWord => tWord.includes(qWord) || qWord.includes(tWord))
+        );
+        
+        if (matchingWords.length >= Math.min(2, queryWords.length)) {
+          return true;
+        }
+        
+        // Time-based matching for deletion
+        if (query.includes('pm') || query.includes('am') || /\d{1,2}:\d{2}/.test(query)) {
+          const eventTime = event.startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}).toLowerCase();
+          const queryTime = query.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i)?.[0]?.toLowerCase();
+          
+          if (queryTime && eventTime.includes(queryTime.replace(/\s/g, ''))) {
+            return true;
+          }
+        }
+        
+        return false;
+      });
       
       return {
         success: true,

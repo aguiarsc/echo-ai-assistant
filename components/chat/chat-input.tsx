@@ -273,17 +273,7 @@ Provide only the edited content without any explanations.`
                   result = { success: false, message: 'Event ID required for update' }
                 }
                 break
-                
-              case 'delete':
-                if (calendarIntent.eventId) {
-                  result = await calendarFunctions.delete_calendar_event({
-                    eventId: calendarIntent.eventId
-                  })
-                } else {
-                  result = { success: false, message: 'Event ID required for deletion' }
-                }
-                break
-                
+              
               case 'list':
                 result = await calendarFunctions.list_calendar_events({
                   startDate: calendarIntent.dateRange?.start || new Date().toISOString(),

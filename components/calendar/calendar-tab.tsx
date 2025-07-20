@@ -437,11 +437,11 @@ export function CalendarTab({ open }: CalendarTabProps) {
                 <div className="space-y-1">
                   <div className="flex items-center text-sm font-semibold">
                     <Command className="h-3 w-3 mr-1 text-primary" /> 
-                    Managing Events
+                    Updating Events
                   </div>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">Cancel my 2 PM meeting today</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Reschedule the team standup to 10 AM</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">Reschedule the team standup to 10 AM</code>
                   <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Update the project deadline to next Friday</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Move my dentist appointment to 3 PM</code>
                 </div>
               </div>
             </div>
@@ -463,7 +463,7 @@ export function CalendarTab({ open }: CalendarTabProps) {
                 </div>
                 <div className="flex items-center space-x-2 bg-muted/30 p-2 rounded">
                   <Trash2 className="h-4 w-4 text-red-500" />
-                  <span className="text-sm">Delete events</span>
+                  <span className="text-sm">Delete manually</span>
                 </div>
               </div>
             </div>
@@ -478,6 +478,7 @@ export function CalendarTab({ open }: CalendarTabProps) {
                 <li>Days with events are highlighted on the calendar with a colored background and dot</li>
                 <li>Click on any calendar day to view events for that specific date</li>
                 <li>Use the Calendar tab for manual event management with the visual interface</li>
+                <li><strong>Event deletion is manual-only for safety</strong> - use the Calendar tab to delete events</li>
               </ul>
             </div>
           </div>

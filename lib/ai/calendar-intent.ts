@@ -2,7 +2,7 @@
 // Utility for detecting calendar management intent in user prompts
 
 export interface CalendarIntentResult {
-  action: 'create' | 'update' | 'delete' | 'list' | 'search';
+  action: 'create' | 'update' | 'list' | 'search';
   title?: string;
   description?: string;
   startDate?: string;
@@ -10,6 +10,7 @@ export interface CalendarIntentResult {
   allDay?: boolean;
   eventId?: string;
   query?: string;
+  timeText?: string;
   dateRange?: { start: string; end: string };
 }
 
@@ -27,7 +28,9 @@ export function detectCalendarIntent(prompt: string): CalendarIntentResult | nul
     // "Add a dentist appointment on Friday at 10:30 AM"
     /(?:add|create|schedule|book)\s+(?:a|an)?\s*([^\s]+)\s+(appointment|meeting|event)\s+(?:on|for)\s+(\w+)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
     // "Create an event for the project deadline on July 25th"
-    /(?:create|add|schedule)\s+(?:a|an)?\s*(?:event|appointment|meeting)\s+(?:for|about)\s+([^,]+?)\s+(?:on|for)\s+([^,]+?)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i
+    /(?:create|add|schedule)\s+(?:a|an)?\s*(?:event|appointment|meeting)\s+(?:for|about)\s+([^,]+?)\s+(?:on|for)\s+([^,]+?)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
+    // More flexible patterns
+    /(?:schedule|add|create|book|plan)\s+(?:a|an)?\s*([^,]+?)\s+(?:tomorrow|today|on\s+\w+|for\s+\w+)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i
   ];
 
   // Update event patterns
@@ -36,11 +39,7 @@ export function detectCalendarIntent(prompt: string): CalendarIntentResult | nul
     /(?:move|reschedule)\s+(?:the\s+)?(?:event|appointment|meeting)(?:\s+(?:called|named|titled)\s+["']?([^"']+)["']?)?(?:\s+to\s+([^,]+))?/i
   ];
 
-  // Delete event patterns
-  const deletePatterns = [
-    /(?:delete|remove|cancel|clear)\s+(?:the\s+)?(?:event|appointment|meeting)(?:\s+(?:called|named|titled)\s+["']?([^"']+)["']?)?/i,
-    /(?:cancel|remove)\s+(?:my\s+)?(?:appointment|meeting|event)(?:\s+(?:on|for|at)\s+([^,]+))?/i
-  ];
+  // Note: Delete operations are disabled for safety - users must delete events manually from the Calendar tab
 
   // List events patterns
   const listPatterns = [
@@ -139,6 +138,11 @@ export function detectCalendarIntent(prompt: string): CalendarIntentResult | nul
         timeText = match[3]; // time if any
         title = subject;
         dateText = dateStr;
+      } else if (i === 3) {
+        // "Schedule something tomorrow at 2 PM" - flexible pattern
+        const subject = match[1]; // something
+        timeText = match[2]; // 2 PM
+        title = subject;
       }
       
       // Extract date from the original prompt if not captured
@@ -181,21 +185,6 @@ export function detectCalendarIntent(prompt: string): CalendarIntentResult | nul
         action: 'update',
         title,
         startDate: parseDateTime(newDate)
-      };
-    }
-  }
-
-  // Check delete patterns
-  for (const pattern of deletePatterns) {
-    const match = prompt.match(pattern);
-    if (match) {
-      const title = match[1]?.trim();
-      const dateText = match[2]?.trim();
-      
-      return {
-        action: 'delete',
-        title,
-        startDate: parseDateTime(dateText)
       };
     }
   }
