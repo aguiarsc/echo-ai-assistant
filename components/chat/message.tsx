@@ -642,6 +642,61 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
                     >
                       {renderMessageContent()}
                     </ReactMarkdown>
+                    
+                    {/* Grounding metadata display */}
+                    {message.groundingMetadata && (
+                      <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span className="text-sm font-medium text-red-700 dark:text-red-300">Sources</span>
+                        </div>
+                        {message.groundingMetadata.groundingChunks && message.groundingMetadata.groundingChunks.length > 0 && (
+                          <div className="space-y-1">
+                            {message.groundingMetadata.groundingChunks.slice(0, 3).map((chunk: any, index: number) => {
+                              // Extract clean domain from URL
+                              const getDomainFromUrl = (url: string) => {
+                                try {
+                                  const domain = new URL(url).hostname;
+                                  return domain.startsWith('www.') ? domain.slice(4) : domain;
+                                } catch {
+                                  return url;
+                                }
+                              };
+                              
+                              return (
+                                <div key={index} className="flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 bg-red-400 rounded-full flex-shrink-0"></div>
+                                  <a 
+                                    href={chunk.web?.uri} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 hover:underline transition-colors"
+                                    title={chunk.web?.title || chunk.web?.uri}
+                                  >
+                                    {chunk.web?.title || (chunk.web?.uri ? getDomainFromUrl(chunk.web.uri) : 'Unknown source')}
+                                  </a>
+                                </div>
+                              );
+                            })}
+                            {message.groundingMetadata.groundingChunks.length > 3 && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="w-1.5 h-1.5 bg-red-300 rounded-full flex-shrink-0"></div>
+                                <span className="text-xs text-red-500 dark:text-red-400">
+                                  +{message.groundingMetadata.groundingChunks.length - 3} more sources
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {message.groundingMetadata.webSearchQueries && message.groundingMetadata.webSearchQueries.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-red-200 dark:border-red-700">
+                            <div className="text-xs text-red-600 dark:text-red-400">
+                              <span className="font-medium">Search queries:</span> {message.groundingMetadata.webSearchQueries.join(', ')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

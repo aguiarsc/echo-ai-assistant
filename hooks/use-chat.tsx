@@ -244,6 +244,18 @@ export function useChat() {
         }
       }
 
+      // Handle grounding metadata if present
+      if (response.groundingMetadata) {
+        // Update the model message with grounding metadata
+        const currentChat = useChatStore.getState().chats.find(c => c.id === chat.id);
+        if (currentChat) {
+          const modelMessage = currentChat.messages.find(m => m.id === modelMessageId);
+          if (modelMessage) {
+            updateMessage(chat.id, modelMessageId, '', false, response.groundingMetadata);
+          }
+        }
+      }
+
       setError(null);
     } catch (err: any) {
       if (err.name !== 'AbortError') {

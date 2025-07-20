@@ -35,7 +35,7 @@ interface ChatStore {
   
   // Message management
   addMessage: (chatId: string, message: Omit<ChatMessage, 'id' | 'timestamp'>) => string;
-  updateMessage: (chatId: string, messageId: string, content: string, append?: boolean) => void;
+  updateMessage: (chatId: string, messageId: string, content: string, append?: boolean, groundingMetadata?: any) => void;
   setTokenCount: (chatId: string, counts: { total: number; prompt: number; completion: number; thinking?: number }) => void;
   
   // Generation settings
@@ -193,14 +193,18 @@ export const useChatStore = create<ChatStore>()(
         return messageId;
       },
       
-      updateMessage: (chatId, messageId, content, append = false) => set(state => ({
+      updateMessage: (chatId, messageId, content, append = false, groundingMetadata) => set(state => ({
         chats: state.chats.map(chat => 
           chat.id === chatId
             ? {
                 ...chat,
                 messages: chat.messages.map(msg =>
                   msg.id === messageId
-                    ? { ...msg, content: append ? msg.content + content : content }
+                    ? { 
+                        ...msg, 
+                        content: append ? msg.content + content : content,
+                        ...(groundingMetadata && { groundingMetadata })
+                      }
                     : msg
                 ),
                 updatedAt: Date.now()

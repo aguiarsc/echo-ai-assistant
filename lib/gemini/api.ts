@@ -57,27 +57,38 @@ export async function generateGeminiResponse({
             }
           : { thinkingBudget: 0 };
         
+        const config: any = { 
+          temperature: params.temperature,
+          topP: params.topP,
+          topK: params.topK,
+          maxOutputTokens: params.maxOutputTokens,
+          safetySettings: params.safetySettings,
+          thinkingConfig
+        };
+        
+        // Add grounding tool if enabled
+        if (params.groundingEnabled) {
+          config.tools = [{ googleSearch: {} }];
+        }
+        
         const result = await genAI.models.generateContentStream({
           model,
           contents: fileUris && fileUris.length > 0
             ? [{ text: lastMessage }, ...fileUris.map(uri => ({ fileData: { fileUri: uri } }))]
             : lastMessage,
-          config: { 
-            temperature: params.temperature,
-            topP: params.topP,
-            topK: params.topK,
-            maxOutputTokens: params.maxOutputTokens,
-            safetySettings: params.safetySettings,
-            thinkingConfig 
-          },
+          config,
         });
 
         let responseText = "";
         let thinkingText = "";
         let finalUsageMetadata = null;
+        let groundingMetadata = null;
 
         for await (const chunk of result) {
           if (chunk.usageMetadata) finalUsageMetadata = chunk.usageMetadata;
+          if (chunk.candidates?.[0]?.groundingMetadata) {
+            groundingMetadata = chunk.candidates[0].groundingMetadata;
+          }
           if (!chunk.candidates?.[0]?.content?.parts) continue;
           
           for (const part of chunk.candidates[0].content.parts) {
@@ -94,7 +105,7 @@ export async function generateGeminiResponse({
           }
         }
 
-        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata };
+        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata, groundingMetadata };
       } else {
         const thinkingConfig = params.thinkingEnabled
           ? { 
@@ -103,25 +114,36 @@ export async function generateGeminiResponse({
             }
           : { thinkingBudget: 0 };
 
+        const config: any = { 
+          temperature: params.temperature,
+          topP: params.topP,
+          topK: params.topK,
+          maxOutputTokens: params.maxOutputTokens,
+          safetySettings: params.safetySettings,
+          thinkingConfig
+        };
+        
+        // Add grounding tool if enabled
+        if (params.groundingEnabled) {
+          config.tools = [{ googleSearch: {} }];
+        }
+        
         const response = await genAI.models.generateContent({
           model,
           contents: fileUris && fileUris.length > 0
             ? [{ text: lastMessage }, ...fileUris.map(uri => ({ fileData: { fileUri: uri } }))]
             : lastMessage,
-          config: { 
-            temperature: params.temperature,
-            topP: params.topP,
-            topK: params.topK,
-            maxOutputTokens: params.maxOutputTokens,
-            safetySettings: params.safetySettings,
-            thinkingConfig 
-          },
+          config,
         });
 
         let thinking = null;
         let answer = null;
+        let groundingMetadata = null;
 
         if (params.thinkingEnabled && params.includeSummaries && response.candidates?.[0]?.content?.parts) {
+          if (response.candidates?.[0]?.groundingMetadata) {
+            groundingMetadata = response.candidates[0].groundingMetadata;
+          }
           for (const part of response.candidates[0].content.parts) {
             if (!part.text) continue;
             if (part.thought) thinking = part.text;
@@ -131,25 +153,32 @@ export async function generateGeminiResponse({
           answer = response.text || "";
         }
 
-        return { text: answer || response.text || "", thinking, usageMetadata: response.usageMetadata };
+        return { text: answer || response.text || "", thinking, usageMetadata: response.usageMetadata, groundingMetadata };
       }
     } else {
+      const chatConfig: any = {
+        temperature: params.temperature,
+        topP: params.topP,
+        topK: params.topK,
+        maxOutputTokens: params.maxOutputTokens,
+        safetySettings: params.safetySettings,
+        thinkingConfig: params.thinkingEnabled
+          ? { 
+              includeThoughts: params.includeSummaries ?? true,
+              thinkingBudget: params.thinkingBudget ?? -1
+            }
+          : { thinkingBudget: 0 }
+      };
+      
+      // Add grounding tool if enabled
+      if (params.groundingEnabled) {
+        chatConfig.tools = [{ googleSearch: {} }];
+      }
+      
       const chat = genAI.chats.create({
         model,
         history: history.slice(0, -1),
-        config: {
-          temperature: params.temperature,
-          topP: params.topP,
-          topK: params.topK,
-          maxOutputTokens: params.maxOutputTokens,
-          safetySettings: params.safetySettings,
-          thinkingConfig: params.thinkingEnabled
-            ? { 
-                includeThoughts: params.includeSummaries ?? true,
-                thinkingBudget: params.thinkingBudget ?? -1
-              }
-            : { thinkingBudget: 0 }
-        }
+        config: chatConfig
       });
 
       const lastMessage = history[history.length - 1]?.parts?.[0]?.text || "";
@@ -162,9 +191,13 @@ export async function generateGeminiResponse({
         let responseText = "";
         let thinkingText = "";
         let finalUsageMetadata = null;
+        let groundingMetadata = null;
 
         for await (const chunk of result) {
           if (chunk.usageMetadata) finalUsageMetadata = chunk.usageMetadata;
+          if (chunk.candidates?.[0]?.groundingMetadata) {
+            groundingMetadata = chunk.candidates[0].groundingMetadata;
+          }
           if (!chunk.candidates?.[0]?.content?.parts) continue;
           
           for (const part of chunk.candidates[0].content.parts) {
@@ -181,13 +214,17 @@ export async function generateGeminiResponse({
           }
         }
 
-        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata };
+        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata, groundingMetadata };
       } else {
         const response = await chat.sendMessage({ message: messageParts });
         let thinking = null;
         let answer = response.text || "";
+        let groundingMetadata = null;
 
         if (params.thinkingEnabled && params.includeSummaries && response.candidates?.[0]?.content?.parts) {
+          if (response.candidates?.[0]?.groundingMetadata) {
+            groundingMetadata = response.candidates[0].groundingMetadata;
+          }
           for (const part of response.candidates[0].content.parts) {
             if (!part.text) continue;
             if (part.thought) thinking = part.text;
@@ -195,7 +232,7 @@ export async function generateGeminiResponse({
           }
         }
 
-        return { text: answer, thinking, usageMetadata: response.usageMetadata };
+        return { text: answer, thinking, usageMetadata: response.usageMetadata, groundingMetadata };
       }
     }
   } catch (error: any) {

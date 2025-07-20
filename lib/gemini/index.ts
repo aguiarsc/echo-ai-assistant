@@ -49,6 +49,7 @@ export interface GenerationParams {
   safetySettings?: SafetySetting[];
   workMode?: 'standard' | 'business' | 'technical' | 'concise'; // Track the current work style mode
   streamingSpeed?: number; // Delay in milliseconds between characters (5-15ms)
+  groundingEnabled?: boolean; // Enable Google Search grounding for real-time information
 }
 
 export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
@@ -61,6 +62,7 @@ export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
   includeSummaries: true,
   workMode: 'business',
   streamingSpeed: 5,
+  groundingEnabled: false,
   safetySettings: [
     {
       category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -97,6 +99,23 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   files?: FileMetadata[]; // Add support for file attachments
+  groundingMetadata?: {
+    webSearchQueries?: string[];
+    groundingChunks?: Array<{
+      web?: {
+        uri: string;
+        title: string;
+      };
+    }>;
+    groundingSupports?: Array<{
+      segment?: {
+        startIndex: number;
+        endIndex: number;
+        text: string;
+      };
+      groundingChunkIndices?: number[];
+    }>;
+  };
 }
 
 export interface Chat {

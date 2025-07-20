@@ -509,6 +509,22 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   </p>
                 </div>
               )}
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="grounding-enabled">Google Search Grounding</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Enable real-time web search for current information and citations
+                    </p>
+                  </div>
+                  <Switch
+                    id="grounding-enabled"
+                    checked={generationParams.groundingEnabled || false}
+                    onCheckedChange={(checked: boolean) => setGenerationParams({ groundingEnabled: checked })}
+                  />
+                </div>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex justify-end">
