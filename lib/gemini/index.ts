@@ -48,31 +48,20 @@ export interface GenerationParams {
   includeSummaries?: boolean;
   safetySettings?: SafetySetting[];
   workMode?: 'standard' | 'business' | 'technical' | 'concise'; // Track the current work style mode
-  streamingSpeed?: number; // Delay in milliseconds between characters (0-200ms)
+  streamingSpeed?: number; // Delay in milliseconds between characters (5-15ms)
 }
 
 export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
-  // Moderate temperature (0.7) for balanced creativity and consistency in business contexts
-  temperature: 0.7,
-  // Balanced top_p for reliable yet flexible responses
+  temperature: 0.5,
   topP: 0.95,
-  // Moderate top_k for consistent professional output
   topK: 40,
-  // Sufficient tokens for detailed business documents and analysis
   maxOutputTokens: 4096,
-  // Enable thinking for better business analysis and decision-making
   thinkingEnabled: true,
-  // Dynamic thinking budget - let the model decide based on complexity (-1)
-  // For manual control: 1024-8192 for Flash, 128-32768 for Pro
   thinkingBudget: -1,
-  // Show summaries of thinking process for business analysis insights
   includeSummaries: true,
-  // Business mode enabled by default
   workMode: 'business',
-  // Moderate streaming speed for professional readability (25ms between characters)
-  streamingSpeed: 25,
+  streamingSpeed: 5,
   safetySettings: [
-    // Default to BLOCK_NONE as specified for the newer models
     {
       category: HarmCategory.HARM_CATEGORY_HARASSMENT,
       threshold: HarmBlockThreshold.BLOCK_NONE,

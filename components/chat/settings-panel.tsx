@@ -425,14 +425,14 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 </div>
                 <Slider
                   id="streaming-speed"
-                  min={0}
-                  max={50}
-                  step={5}
-                  value={[generationParams.streamingSpeed || 25]}
+                  min={5}
+                  max={15}
+                  step={1}
+                  value={[generationParams.streamingSpeed || 5]}
                   onValueChange={(value: number[]) => setGenerationParams({ streamingSpeed: value[0] })}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Controls typing speed: 0ms = instant, 25ms = moderate, 50ms = slow
+                  Controls typing speed: 5ms = very fast, 10ms = moderate, 15ms = slow
                 </p>
               </div>
               
