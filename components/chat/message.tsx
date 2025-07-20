@@ -166,6 +166,9 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
   const isFileEditSuccess = message.content?.startsWith('FILE_EDIT_SUCCESS:')
   const isFileEditError = message.content?.startsWith('FILE_EDIT_ERROR:')
   
+  // Check if this message has context files
+  const hasContextFiles = message.content?.startsWith('CONTEXT_FILES_PROVIDED:')
+  
   // Parse file creation message data
   const parseFileCreationMessage = () => {
     if (!isFileCreationMessage) return null
@@ -217,6 +220,23 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
   }
   
   const fileEditData = parseFileEditMessage()
+  
+  // Parse context files data
+  const parseContextFiles = () => {
+    if (!hasContextFiles || !message.content) return null
+    
+    try {
+      const contextLine = message.content.split('\n')[0]
+      const jsonData = contextLine.replace('CONTEXT_FILES_PROVIDED:', '')
+      const fileNames = JSON.parse(jsonData)
+      return { fileNames }
+    } catch (error) {
+      console.error('Failed to parse context files:', error)
+      return null
+    }
+  }
+  
+  const contextData = parseContextFiles()
 
   // Get the content to render for the message
   const renderMessageContent = () => {
@@ -232,6 +252,12 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
     // Handle file edit messages specially
     if (isFileEditMessage) {
       return null // We'll render these with special UI
+    }
+    
+    // Handle context files - remove the marker and return the actual content
+    if (hasContextFiles) {
+      const lines = message.content.split('\n')
+      return lines.slice(2).join('\n') // Skip the marker line and empty line
     }
     
     // Process mixed content with markdown code blocks
@@ -363,6 +389,30 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
                             </div>
                           )
                         )}
+                      </div>
+                    )}
+                    
+                    {/* Context Files UI */}
+                    {hasContextFiles && contextData && (
+                      <div className="mb-4 rounded-lg p-4 border transition-all duration-300 bg-gradient-to-r from-amber-50/50 to-orange-100/50 dark:from-amber-950/20 dark:to-orange-900/30 border-amber-200/30 dark:border-amber-800/30">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-amber-500/20 dark:bg-amber-400/20">
+                            <div className="w-3 h-3 rounded-full bg-amber-500 dark:bg-amber-400" />
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-amber-700 dark:text-amber-300 mb-2">
+                              Context Files Provided
+                            </div>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {contextData.fileNames.map((fileName: string, index: number) => (
+                                <code key={index} className="text-sm bg-amber-100/50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded text-amber-700 dark:text-amber-300">
+                                  {fileName}
+                                </code>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                     

@@ -111,9 +111,10 @@ export function useChat() {
           .filter(file => file.type === "file") // Only include files, not folders
           .map(file => file.name);
         
-        // Create a clean, minimal context indicator
+        // Add context marker for the message component to detect and style
         if (fileNames.length > 0) {
-          enhancedContent += `\n\nProvided context: ${fileNames.join(', ')}`;
+          const contextMarker = `CONTEXT_FILES_PROVIDED:${JSON.stringify(fileNames)}`;
+          enhancedContent = contextMarker + "\n\n" + enhancedContent;
         }
       }
       
