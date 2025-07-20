@@ -2,6 +2,7 @@ import Dexie from 'dexie';
 import { v4 as uuidv4 } from 'uuid';
 import { Chat, ChatMessage } from '../gemini';
 import { FileNode } from '../files/store';
+import { CalendarEventStore } from '../calendar/types';
 
 // Extended Chat type without messages for DB storage
 type ChatStore = Omit<Chat, 'messages'>;
@@ -65,12 +66,33 @@ class FileNodeClass implements FileNode {
   }
 }
 
+// Class for Dexie to use for mapping calendar event objects
+class CalendarEventClass implements CalendarEventStore {
+  id!: string;
+  title!: string;
+  description?: string;
+  startDate!: string;
+  endDate!: string;
+  allDay!: boolean;
+  color?: string;
+  createdAt!: number;
+  updatedAt!: number;
+  
+  constructor(init?: Partial<CalendarEventStore>) {
+    if (init) Object.assign(this, init);
+    this.id = this.id || uuidv4();
+    this.createdAt = this.createdAt || Date.now();
+    this.updatedAt = this.updatedAt || Date.now();
+  }
+}
+
 // Define the database schema
 export class ChatDatabase extends Dexie {
   // Define tables
   chats!: Dexie.Table<ChatStore, string>; // string = type of the primary key
   messages!: Dexie.Table<ChatMessageStore, string>; // string = type of the primary key
   files!: Dexie.Table<FileNode, string>;
+  calendarEvents!: Dexie.Table<CalendarEventStore, string>;
 
   constructor() {
     super('ChatDatabase');
@@ -80,7 +102,8 @@ export class ChatDatabase extends Dexie {
       // Define table schemas
       chats: 'id, title, model, createdAt, updatedAt',
       messages: 'id, chatId, role, timestamp, [chatId+timestamp]',
-      files: 'id, name, type, parentId, path, lastModified'
+      files: 'id, name, type, parentId, path, lastModified',
+      calendarEvents: 'id, title, startDate, endDate, createdAt, updatedAt'
     });
 
     // Version hooks are safer than table hooks for type safety
@@ -91,6 +114,8 @@ export class ChatDatabase extends Dexie {
       this.messages.mapToClass(MessageStoreClass);
       // Set default handlers for files
       this.files.mapToClass(FileNodeClass);
+      // Set default handlers for calendar events
+      this.calendarEvents.mapToClass(CalendarEventClass);
     });
   }
 }
