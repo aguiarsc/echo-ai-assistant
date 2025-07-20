@@ -447,28 +447,6 @@ export function CalendarTab({ open }: CalendarTabProps) {
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Calendar Features</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center space-x-2 bg-muted/30 p-2 rounded">
-                  <Plus className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">Create events</span>
-                </div>
-                <div className="flex items-center space-x-2 bg-muted/30 p-2 rounded">
-                  <CalendarIcon className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm">View schedule</span>
-                </div>
-                <div className="flex items-center space-x-2 bg-muted/30 p-2 rounded">
-                  <Edit className="h-4 w-4 text-purple-500" />
-                  <span className="text-sm">Update events</span>
-                </div>
-                <div className="flex items-center space-x-2 bg-muted/30 p-2 rounded">
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                  <span className="text-sm">Delete manually</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
               <h3 className="text-lg font-semibold">Pro Tips</h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                 <li>Be specific about dates and times (e.g., "tomorrow at 2 PM" vs "later")</li>
