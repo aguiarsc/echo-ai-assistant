@@ -170,6 +170,16 @@ export function CalendarTab({ open }: CalendarTabProps) {
     return getEventsForDate(date)
   }
 
+  // Get the color for the date marker based on events
+  const getDateColor = (date: Date) => {
+    const dateEvents = getEventsForCalendarDate(date)
+    if (dateEvents.length === 0) return null
+    
+    // Use the first event's color as the marker color
+    // You could also implement more complex logic like using the most important event color
+    return dateEvents[0].color || '#3b82f6'
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Calendar Header */}
@@ -200,18 +210,92 @@ export function CalendarTab({ open }: CalendarTabProps) {
 
       {/* Calendar Component */}
       <div className="p-4">
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={(date) => date && setSelectedDate(date)}
-          className="rounded-md border"
-          modifiers={{
-            hasEvents: (date) => getEventsForCalendarDate(date).length > 0
-          }}
-          modifiersClassNames={{
-            hasEvents: "text-primary font-semibold relative after:absolute after:bottom-0 after:left-1/2 after:transform after:-translate-x-1/2 after:w-4 after:h-0.5 after:bg-blue-500"
-          }}
-        />
+        <div className="calendar-wrapper">
+          {/* Create hidden divs with custom CSS variables for each date that has events */}
+          {Array.from({ length: 31 }, (_, i) => i + 1).map(day => {
+            // Create a date object for the current month/day
+            const dateToCheck = new Date(selectedDate);
+            dateToCheck.setDate(day);
+            
+            const color = getDateColor(dateToCheck);
+            if (!color) return null;
+            
+            // Create unique CSS variable for this date
+            const dayStr = dateToCheck.getDate().toString().padStart(2, '0');
+            const monthStr = (dateToCheck.getMonth() + 1).toString().padStart(2, '0');
+            const dateKey = `${monthStr}-${dayStr}`;
+            
+            return (
+              <style key={dateKey}>{`
+                .calendar-day-${dateKey} {
+                  position: relative;
+                  font-weight: 600;
+                }
+                .calendar-day-${dateKey}::after {
+                  content: '';
+                  position: absolute;
+                  bottom: 0;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 16px;
+                  height: 2px;
+                  background-color: ${color};
+                  border-radius: 1px;
+                }
+              `}</style>
+            );
+          })}
+          
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => date && setSelectedDate(date)}
+            className="rounded-md border"
+            modifiers={{
+              hasEvents: (date) => {
+                const events = getEventsForCalendarDate(date);
+                return events.length > 0;
+              },
+              // Add dynamic class names for each day with events
+              ...Array.from({ length: 31 }, (_, i) => i + 1).reduce((acc, day) => {
+                const dateToCheck = new Date(selectedDate);
+                dateToCheck.setDate(day);
+                const events = getEventsForCalendarDate(dateToCheck);
+                
+                if (events.length > 0) {
+                  const dayStr = dateToCheck.getDate().toString().padStart(2, '0');
+                  const monthStr = (dateToCheck.getMonth() + 1).toString().padStart(2, '0');
+                  const dateKey = `${monthStr}-${dayStr}`;
+                  
+                  acc[`calendar-day-${dateKey}`] = (modifierDate) => 
+                    modifierDate.getDate() === dateToCheck.getDate() && 
+                    modifierDate.getMonth() === dateToCheck.getMonth() &&
+                    modifierDate.getFullYear() === dateToCheck.getFullYear();
+                }
+                
+                return acc;
+              }, {} as Record<string, (date: Date) => boolean>)
+            }}
+            modifiersClassNames={{
+              // Apply the dynamic class names for each day with events
+              ...Array.from({ length: 31 }, (_, i) => i + 1).reduce((acc, day) => {
+                const dateToCheck = new Date(selectedDate);
+                dateToCheck.setDate(day);
+                const events = getEventsForCalendarDate(dateToCheck);
+                
+                if (events.length > 0) {
+                  const dayStr = dateToCheck.getDate().toString().padStart(2, '0');
+                  const monthStr = (dateToCheck.getMonth() + 1).toString().padStart(2, '0');
+                  const dateKey = `${monthStr}-${dayStr}`;
+                  
+                  acc[`calendar-day-${dateKey}`] = `calendar-day-${dateKey}`;
+                }
+                
+                return acc;
+              }, {} as Record<string, string>)
+            }}
+          />
+        </div>
       </div>
 
       {/* Events for Selected Date */}
@@ -229,8 +313,8 @@ export function CalendarTab({ open }: CalendarTabProps) {
                 {dayEvents.map((event) => (
                   <div
                     key={event.id}
-                    className="p-3 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors"
-                    style={{ borderLeftColor: event.color, borderLeftWidth: '4px' }}
+                    className="p-3 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
+                    style={{ border: `1px solid ${event.color || '#3b82f6'}` }}
                     onClick={() => openEventDialog(event)}
                   >
                     <div className="flex items-start justify-between">
