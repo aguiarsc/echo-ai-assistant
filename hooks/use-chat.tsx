@@ -76,7 +76,6 @@ export function useChat() {
   // Handle function calls from Gemini
   const handleFunctionCall = useCallback(async (functionCall: any, chatId: string, messageId: string) => {
     try {
-      console.log('🔧 Function call received:', functionCall);
       let result;
       
       switch (functionCall.name) {
@@ -249,7 +248,7 @@ export function useChat() {
         hour12: true 
       });
       
-      const dateTimeContext = `\n\nCURRENT DATE AND TIME CONTEXT:\n- Current date and time: ${currentDateTime}\n- Today is: ${currentDateString}\n- Current time: ${currentTimeString}\n- When creating calendar events, use this information to calculate dates like "tomorrow", "next week", etc.\n- Always use ISO format for dates in function calls (YYYY-MM-DDTHH:MM:SS)`;
+      const dateTimeContext = `\n\n🗓️ IMPORTANT - CURRENT DATE AND TIME CONTEXT:\n⚠️  IGNORE ANY PREVIOUS DATE KNOWLEDGE - USE ONLY THIS CURRENT INFORMATION:\n- RIGHT NOW it is: ${currentDateTime}\n- TODAY is: ${currentDateString}\n- Current time: ${currentTimeString}\n- For calendar operations, calculate relative dates from TODAY (${currentDateString})\n- Tomorrow = ${new Date(now.getTime() + 24*60*60*1000).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n- Always use ISO format for dates in function calls (YYYY-MM-DDTHH:MM:SS)\n- When listing events for "tomorrow", use the date range for the day after TODAY`;
       
       enhancedSystemInstruction = enhancedSystemInstruction 
         ? `${enhancedSystemInstruction}${dateTimeContext}`

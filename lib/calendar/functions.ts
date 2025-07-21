@@ -76,22 +76,8 @@ export const calendarFunctionDeclarations = [
     }
   },
   {
-    name: 'delete_calendar_event',
-    description: 'Delete a calendar event',
-    parameters: {
-      type: 'object',
-      properties: {
-        eventId: {
-          type: 'string',
-          description: 'The ID of the event to delete'
-        }
-      },
-      required: ['eventId']
-    }
-  },
-  {
     name: 'list_calendar_events',
-    description: 'List calendar events for a specific date range',
+    description: 'List all calendar events within a specific date range. Use this to show events for today, tomorrow, this week, etc.',
     parameters: {
       type: 'object',
       properties: {
@@ -134,7 +120,6 @@ export const calendarFunctions = {
     color?: string;
   }) => {
     try {
-      console.log('📅 Creating calendar event with args:', args);
       const startDateObj = new Date(args.startDate);
       
       // Auto-calculate endDate if not provided (1 hour after start)
