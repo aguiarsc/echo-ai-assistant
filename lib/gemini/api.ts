@@ -13,6 +13,7 @@ export async function generateGeminiResponse({
   systemInstruction,
   params = DEFAULT_GENERATION_PARAMS,
   fileUris,
+  tools,
   onStream,
   signal
 }: {
@@ -22,7 +23,8 @@ export async function generateGeminiResponse({
   systemInstruction?: string;
   params?: GenerationParams;
   fileUris?: string[];
-  onStream?: (chunk: string, thinking?: string | null) => void;
+  tools?: any[];
+  onStream?: (chunk: string, thinking?: string | null, functionCalls?: any[]) => void;
   signal?: AbortSignal;
 }) {
   try {
@@ -71,6 +73,11 @@ export async function generateGeminiResponse({
           config.tools = [{ googleSearch: {} }];
         }
         
+        // Add function calling tools if provided
+        if (tools && tools.length > 0) {
+          config.tools = config.tools ? [...config.tools, ...tools] : tools;
+        }
+        
         const result = await genAI.models.generateContentStream({
           model,
           contents: fileUris && fileUris.length > 0
@@ -83,6 +90,7 @@ export async function generateGeminiResponse({
         let thinkingText = "";
         let finalUsageMetadata = null;
         let groundingMetadata = null;
+        let functionCalls: any[] = [];
 
         for await (const chunk of result) {
           if (chunk.usageMetadata) finalUsageMetadata = chunk.usageMetadata;
@@ -92,20 +100,25 @@ export async function generateGeminiResponse({
           if (!chunk.candidates?.[0]?.content?.parts) continue;
           
           for (const part of chunk.candidates[0].content.parts) {
+            if (part.functionCall) {
+              functionCalls.push(part.functionCall);
+              onStream && onStream("", null, [part.functionCall]);
+              continue;
+            }
             if (!part.text) continue;
             if (part.thought) {
               thinkingText += part.text;
               // Send only the new thinking chunk, not the accumulated text
-              onStream("", part.text);
+              onStream && onStream("", part.text);
             } else {
               // Send only the new response chunk, not the accumulated text
-              onStream(part.text, null);
+              onStream && onStream(part.text, null);
               responseText += part.text;
             }
           }
         }
 
-        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata, groundingMetadata };
+        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata, groundingMetadata, functionCalls };
       } else {
         const thinkingConfig = params.thinkingEnabled
           ? { 
@@ -126,6 +139,10 @@ export async function generateGeminiResponse({
         // Add grounding tool if enabled
         if (params.groundingEnabled) {
           config.tools = [{ googleSearch: {} }];
+        }
+
+        if (tools && tools.length > 0) {
+          config.tools = config.tools ? [...config.tools, ...tools] : tools;
         }
         
         const response = await genAI.models.generateContent({

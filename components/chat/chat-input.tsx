@@ -17,8 +17,6 @@ import { useFileContextStore } from "@/lib/files/context-store"
 import { createChatAttachments, convertFileToContext, generateFileContextInstruction } from "@/lib/gemini/file-context-adapter"
 import { detectFileCreationIntent } from "@/lib/ai/file-intent"
 import { detectFileEditIntent } from "@/lib/ai/edit-intent"
-import { detectCalendarIntent } from "@/lib/ai/calendar-intent"
-import { calendarFunctions } from "@/lib/calendar/functions"
 import { generateGeminiResponse } from "@/lib/gemini/api"
 import { useFilesStore } from "@/lib/files/store"
 
@@ -222,99 +220,7 @@ Provide only the edited content without any explanations.`
       }
     }
 
-    // Detect calendar intent
-    const calendarIntent = detectCalendarIntent(messageToSend)
-    if (calendarIntent) {
-      try {
-        const chatStore = useChatStore.getState()
-        const chat = chatStore.chats.find(c => c.id === chatStore.activeChat)
-        
-        if (chat) {
-          const userTurnId = crypto.randomUUID()
-          chatStore.addMessage(chat.id, {
-            role: "user",
-            content: messageToSend,
-            turnId: userTurnId
-          })
-          
-          // Add processing message
-          const processingMessageId = chatStore.addMessage(chat.id, {
-            role: "model",
-            content: `CALENDAR_PROCESSING:${calendarIntent.action}`,
-            turnId: userTurnId
-          })
-          
-          try {
-            let result
-            
-            // Execute the appropriate calendar function
-            switch (calendarIntent.action) {
-              case 'create':
-                result = await calendarFunctions.create_calendar_event({
-                  title: calendarIntent.title || 'New Event',
-                  description: calendarIntent.description,
-                  startDate: calendarIntent.startDate || new Date().toISOString(),
-                  endDate: calendarIntent.endDate || new Date(Date.now() + 3600000).toISOString(),
-                  allDay: calendarIntent.allDay || false
-                })
-                break
-                
-              case 'update':
-                if (calendarIntent.eventId) {
-                  result = await calendarFunctions.update_calendar_event({
-                    eventId: calendarIntent.eventId,
-                    title: calendarIntent.title,
-                    description: calendarIntent.description,
-                    startDate: calendarIntent.startDate,
-                    endDate: calendarIntent.endDate,
-                    allDay: calendarIntent.allDay
-                  })
-                } else {
-                  result = { success: false, message: 'Event ID required for update' }
-                }
-                break
-              
-              case 'list':
-                result = await calendarFunctions.list_calendar_events({
-                  startDate: calendarIntent.dateRange?.start || new Date().toISOString(),
-                  endDate: calendarIntent.dateRange?.end || new Date(Date.now() + 86400000).toISOString()
-                })
-                break
-                
-              case 'search':
-                result = await calendarFunctions.search_calendar_events({
-                  query: calendarIntent.query || messageToSend
-                })
-                break
-                
-              default:
-                result = { success: false, message: 'Unknown calendar action' }
-            }
-            
-            // Update the processing message with the result
-            const resultMessage = result.success 
-              ? `CALENDAR_SUCCESS:${calendarIntent.action}:${result.message}`
-              : `CALENDAR_ERROR:${calendarIntent.action}:${result.message}`
-              
-            chatStore.updateMessage(chat.id, processingMessageId, resultMessage)
-            
-          } catch (error) {
-            console.error("Error executing calendar action:", error)
-            chatStore.updateMessage(chat.id, processingMessageId,
-              `CALENDAR_ERROR:${calendarIntent.action}:Failed to execute calendar action`
-            )
-          }
-        }
-        
-        // Clear form
-        setAttachedFiles([])
-        setShowFileUpload(false)
-        return
-      } catch (error) {
-        console.error("Error handling calendar intent:", error)
-        // Continue with normal chat flow if calendar intent handling fails
-      }
-    }
+    // Calendar operations are now handled via function calling in the chat hook
 
     // Detect file creation intent with enhanced NLP capabilities
     const fileIntent = detectFileCreationIntent(messageToSend)

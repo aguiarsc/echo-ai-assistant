@@ -23,7 +23,7 @@ export const calendarFunctionDeclarations = [
         },
         endDate: {
           type: 'string',
-          description: 'End date and time in ISO format (e.g., 2024-01-15T10:00:00)'
+          description: 'End date and time in ISO format (e.g., 2024-01-15T10:00:00). If not provided, will default to 1 hour after start time'
         },
         allDay: {
           type: 'boolean',
@@ -34,7 +34,7 @@ export const calendarFunctionDeclarations = [
           description: 'Color for the event in hex format (e.g., #3b82f6)'
         }
       },
-      required: ['title', 'startDate', 'endDate']
+      required: ['title', 'startDate']
     }
   },
   {
@@ -129,16 +129,28 @@ export const calendarFunctions = {
     title: string;
     description?: string;
     startDate: string;
-    endDate: string;
+    endDate?: string;
     allDay?: boolean;
     color?: string;
   }) => {
     try {
+      console.log('📅 Creating calendar event with args:', args);
       const startDateObj = new Date(args.startDate);
-      const endDateObj = new Date(args.endDate);
       
-      if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
-        throw new Error('Invalid date format. Please use ISO format (e.g., 2024-01-15T09:00:00)');
+      // Auto-calculate endDate if not provided (1 hour after start)
+      let endDateObj: Date;
+      if (args.endDate) {
+        endDateObj = new Date(args.endDate);
+      } else {
+        endDateObj = new Date(startDateObj.getTime() + (60 * 60 * 1000)); // Add 1 hour
+      }
+      
+      if (isNaN(startDateObj.getTime())) {
+        throw new Error('Invalid start date format. Please use ISO format (e.g., 2024-01-15T09:00:00)');
+      }
+      
+      if (isNaN(endDateObj.getTime())) {
+        throw new Error('Invalid end date format. Please use ISO format (e.g., 2024-01-15T09:00:00)');
       }
       
       if (startDateObj > endDateObj) {

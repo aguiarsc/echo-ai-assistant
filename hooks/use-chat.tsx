@@ -6,6 +6,7 @@ import { FileMetadata } from "@/lib/gemini/files-api";
 import { useFileContextStore } from "@/lib/files/context-store";
 import { useFilesStore, FileNode } from "@/lib/files/store";
 import { generateFileContextInstruction, convertFileToContext, generateFileContentText } from "@/lib/gemini/file-context-adapter";
+import { calendarFunctionDeclarations, calendarFunctions } from "@/lib/calendar/functions";
 
 // Default typing speed fallback (will be overridden by generationParams.streamingSpeed)
 const DEFAULT_TYPING_SPEED = 25;
@@ -70,6 +71,42 @@ export function useChat() {
     selectedFiles.forEach(processNode);
     
     return result;
+  }, []);
+
+  // Handle function calls from Gemini
+  const handleFunctionCall = useCallback(async (functionCall: any, chatId: string, messageId: string) => {
+    try {
+      console.log('🔧 Function call received:', functionCall);
+      let result;
+      
+      switch (functionCall.name) {
+        case 'create_calendar_event':
+          result = await calendarFunctions.create_calendar_event(functionCall.args);
+          break;
+        case 'update_calendar_event':
+          result = await calendarFunctions.update_calendar_event(functionCall.args);
+          break;
+        case 'list_calendar_events':
+          result = await calendarFunctions.list_calendar_events(functionCall.args);
+          break;
+        case 'search_calendar_events':
+          result = await calendarFunctions.search_calendar_events(functionCall.args);
+          break;
+        default:
+          result = { success: false, message: `Unknown function: ${functionCall.name}` };
+      }
+      
+      // Add the function result to the stream buffer
+      const resultText = result.success 
+        ? `✅ ${result.message}`
+        : `❌ ${result.message}`;
+      
+      streamBufferRef.current.text += `\n\n${resultText}`;
+      
+    } catch (error) {
+      console.error('Function call error:', error);
+      streamBufferRef.current.text += `\n\n❌ Error executing ${functionCall.name}: ${error}`;
+    }
   }, []);
 
   const sendMessage = useCallback(async (content: string, attachedFiles: FileMetadata[] = []) => {
@@ -194,13 +231,33 @@ export function useChat() {
         }
       }, generationParams.streamingSpeed || DEFAULT_TYPING_SPEED);
 
-      // Prepare enhanced system instruction with file context if needed
+      // Prepare enhanced system instruction with file context and current date/time
       let enhancedSystemInstruction = globalSystemInstruction || "";
+      
+      // Add current date and time information for calendar operations
+      const now = new Date();
+      const currentDateTime = now.toISOString();
+      const currentDateString = now.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      const currentTimeString = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      
+      const dateTimeContext = `\n\nCURRENT DATE AND TIME CONTEXT:\n- Current date and time: ${currentDateTime}\n- Today is: ${currentDateString}\n- Current time: ${currentTimeString}\n- When creating calendar events, use this information to calculate dates like "tomorrow", "next week", etc.\n- Always use ISO format for dates in function calls (YYYY-MM-DDTHH:MM:SS)`;
+      
+      enhancedSystemInstruction = enhancedSystemInstruction 
+        ? `${enhancedSystemInstruction}${dateTimeContext}`
+        : dateTimeContext;
+      
       if (fileContexts && fileContexts.length > 0) {
         const fileContextInstruction = generateFileContextInstruction(fileContexts);
-        enhancedSystemInstruction = enhancedSystemInstruction 
-          ? `${enhancedSystemInstruction}\n\n${fileContextInstruction}`
-          : fileContextInstruction;
+        enhancedSystemInstruction = `${enhancedSystemInstruction}\n\n${fileContextInstruction}`;
       }
 
       const response = await generateGeminiResponse({
@@ -213,10 +270,18 @@ export function useChat() {
         fileUris: attachedFiles.length > 0 && attachedFiles.some(f => f.uri) 
           ? attachedFiles.filter(f => f.uri).map(file => file.uri) 
           : undefined,
-        onStream: (chunk, thinking) => {
+        // Add calendar function declarations
+        tools: [{ functionDeclarations: calendarFunctionDeclarations }],
+        onStream: async (chunk, thinking, functionCalls) => {
           streamBufferRef.current.text += chunk;
           if (thinking) {
             streamBufferRef.current.thinking += thinking;
+          }
+          // Handle function calls immediately when they arrive
+          if (functionCalls && functionCalls.length > 0) {
+            for (const functionCall of functionCalls) {
+              await handleFunctionCall(functionCall, chat.id, modelMessageId);
+            }
           }
         },
         signal: abortControllerRef.current.signal,
