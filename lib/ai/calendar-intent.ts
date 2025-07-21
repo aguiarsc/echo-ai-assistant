@@ -1,5 +1,6 @@
 // calendar-intent.ts
 // Utility for detecting calendar management intent in user prompts
+import * as chrono from 'chrono-node';
 
 export interface CalendarIntentResult {
   action: 'create' | 'update' | 'list' | 'search';
@@ -21,16 +22,22 @@ export interface CalendarIntentResult {
 export function detectCalendarIntent(prompt: string): CalendarIntentResult | null {
   const lowerPrompt = prompt.toLowerCase();
 
-  // Create event patterns - improved to capture time expressions better
+  // Create event patterns - improved to capture diverse date/time expressions better
   const createPatterns = [
     // "Schedule a meeting with the team tomorrow at 2 PM"
-    /(?:schedule|add|create|book)\s+(?:a|an)?\s*(meeting|appointment|event|call)\s+(?:with|for)\s+([^,]+?)\s+(?:tomorrow|today|on\s+\w+|for\s+\w+)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
+    /(?:schedule|add|create|book)\s+(?:a|an)?\s*(meeting|appointment|event|call)\s+(?:with|for)\s+([^,]+?)\s+(?:tomorrow|today|on\s+[\w\s]+|for\s+[\w\s]+)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
+    
     // "Add a dentist appointment on Friday at 10:30 AM"
-    /(?:add|create|schedule|book)\s+(?:a|an)?\s*([^\s]+)\s+(appointment|meeting|event)\s+(?:on|for)\s+(\w+)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
+    /(?:schedule|add|create|book)\s+(?:a|an)?\s*([\w\s]+)\s+(meeting|appointment|event|call)\s+(?:on|for)\s+([\w\s]+)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
+    
     // "Create an event for the project deadline on July 25th"
-    /(?:create|add|schedule)\s+(?:a|an)?\s*(?:event|appointment|meeting)\s+(?:for|about)\s+([^,]+?)\s+(?:on|for)\s+([^,]+?)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
-    // More flexible patterns
-    /(?:schedule|add|create|book|plan)\s+(?:a|an)?\s*([^,]+?)\s+(?:tomorrow|today|on\s+\w+|for\s+\w+)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i
+    /(?:schedule|add|create|book)\s+(?:a|an)?\s*(?:event|meeting|appointment|reminder)\s+(?:for|about)\s+([^,]+?)\s+(?:on|for)\s+([\w\s,.]+?)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
+    
+    // More flexible pattern - "Schedule something tomorrow at 2 PM"
+    /(?:schedule|add|create|book)\s+(?:a|an)?\s*([^,]+?)\s+(?:tomorrow|today|on\s+[\w\s,.]+|for\s+[\w\s,.]+)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
+    
+    // Pattern for explicit date mentions - "Create a budget review for July 25th at 3pm"
+    /(?:schedule|add|create|book)\s+(?:a|an)?\s*([^,]+?)\s+(?:on|for)\s+([\w\s,.]+?)(?:\s+at\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?))?/i,
   ];
 
   // Update event patterns
@@ -54,11 +61,52 @@ export function detectCalendarIntent(prompt: string): CalendarIntentResult | nul
     /(?:do I have|is there)\s+(?:any\s+)?(?:events?|appointments?|meetings?)(?:\s+(?:about|containing|with|related to)\s+([^,]+))?/i
   ];
 
-  // Helper function to parse date/time from text
-  const parseDateTime = (dateText: string, timeText?: string): string | undefined => {
-    if (!dateText) return undefined;
+  // Enhanced helper function to parse date/time from natural language text using chrono-node
+  const parseDateTime = (dateText: string, timeText?: string, originalPrompt?: string): string | undefined => {
+    if (!dateText && !timeText && !originalPrompt) return undefined;
     
-    const cleaned = dateText.trim().toLowerCase();
+    // First attempt: Parse the combined date and time directly from the full prompt if available
+    // This gives the best context for chrono to understand complex date expressions
+    if (originalPrompt) {
+      // Handle ambiguous day references like "the 23rd" by providing context
+      let textToProcess = originalPrompt;
+      
+      // If we're dealing with "the Nth" pattern without month reference, add month context
+      const dayNumberMatch = originalPrompt.match(/the\s+(\d+)(?:st|nd|rd|th)/i);
+      if (dayNumberMatch && !originalPrompt.match(/jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i)) {
+        const dayNum = parseInt(dayNumberMatch[1]);
+        const today = new Date();
+        const currentDay = today.getDate();
+        
+        // If the day number is in the past this month, assume next month
+        if (dayNum < currentDay) {
+          const nextMonth = new Date(today);
+          nextMonth.setMonth(today.getMonth() + 1);
+          const monthName = nextMonth.toLocaleString('default', { month: 'long' });
+          textToProcess = originalPrompt.replace(/the\s+(\d+)(?:st|nd|rd|th)/i, `the $1${dayNumberMatch[0].slice(-2)} of ${monthName}`);
+        }
+      }
+      
+      const results = chrono.parse(textToProcess);
+      if (results.length > 0) {
+        return results[0].start.date().toISOString();
+      }
+    }
+    
+    // Second attempt: Parse from specific date and time text if provided
+    let textToParse = dateText || '';
+    if (timeText) {
+      // Combine date and time for better parsing
+      textToParse += ' ' + timeText;
+    }
+    
+    const results = chrono.parse(textToParse);
+    if (results.length > 0) {
+      return results[0].start.date().toISOString();
+    }
+    
+    // Third attempt: Handle specific relative dates as fallback
+    const cleaned = (dateText || '').trim().toLowerCase();
     let baseDate = new Date();
     
     // Handle relative dates
@@ -67,26 +115,39 @@ export function detectCalendarIntent(prompt: string): CalendarIntentResult | nul
     } else if (cleaned.includes('tomorrow')) {
       baseDate = new Date();
       baseDate.setDate(baseDate.getDate() + 1);
-    } else if (cleaned.includes('friday')) {
-      baseDate = new Date();
-      const daysUntilFriday = (5 - baseDate.getDay() + 7) % 7 || 7;
-      baseDate.setDate(baseDate.getDate() + daysUntilFriday);
+    } else if (cleaned.match(/next\s+(mon|tues|wednes|thurs|fri|satur|sun)day/i)) {
+      const dayMatch = cleaned.match(/next\s+(mon|tues|wednes|thurs|fri|satur|sun)day/i);
+      const dayMap: {[key: string]: number} = {
+        'mon': 1, 'tues': 2, 'wednes': 3, 'thurs': 4, 'fri': 5, 'satur': 6, 'sun': 0
+      };
+      
+      if (dayMatch && dayMatch[1]) {
+        const targetDay = dayMap[dayMatch[1].toLowerCase()];
+        baseDate = new Date();
+        const currentDay = baseDate.getDay();
+        const daysUntil = (targetDay - currentDay + 7) % 7 || 7;
+        baseDate.setDate(baseDate.getDate() + daysUntil);
+      }
+    } else if (cleaned.match(/this\s+(mon|tues|wednes|thurs|fri|satur|sun)day/i)) {
+      const dayMatch = cleaned.match(/this\s+(mon|tues|wednes|thurs|fri|satur|sun)day/i);
+      const dayMap: {[key: string]: number} = {
+        'mon': 1, 'tues': 2, 'wednes': 3, 'thurs': 4, 'fri': 5, 'satur': 6, 'sun': 0
+      };
+      
+      if (dayMatch && dayMatch[1]) {
+        const targetDay = dayMap[dayMatch[1].toLowerCase()];
+        baseDate = new Date();
+        const currentDay = baseDate.getDay();
+        let daysUntil = targetDay - currentDay;
+        if (daysUntil < 0) daysUntil += 7;
+        baseDate.setDate(baseDate.getDate() + daysUntil);
+      }
     } else if (cleaned.includes('next week')) {
       baseDate = new Date();
       baseDate.setDate(baseDate.getDate() + 7);
-    } else {
-      // Try to parse as date
-      try {
-        const parsed = new Date(dateText);
-        if (!isNaN(parsed.getTime())) {
-          baseDate = parsed;
-        }
-      } catch (e) {
-        // Use today as fallback
-      }
     }
     
-    // Parse time if provided
+    // Parse time if provided as a separate parameter
     if (timeText) {
       const timeMatch = timeText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|AM|PM)?/);
       if (timeMatch) {
@@ -115,6 +176,7 @@ export function detectCalendarIntent(prompt: string): CalendarIntentResult | nul
       let title = '';
       let timeText = '';
       let dateText = 'today';
+      let fullPrompt: string | undefined;
       
       // Handle different pattern structures
       if (i === 0) {
@@ -138,23 +200,30 @@ export function detectCalendarIntent(prompt: string): CalendarIntentResult | nul
         timeText = match[3]; // time if any
         title = subject;
         dateText = dateStr;
+        // Capture the full original prompt for better context-aware parsing
+        fullPrompt = prompt;
       } else if (i === 3) {
         // "Schedule something tomorrow at 2 PM" - flexible pattern
         const subject = match[1]; // something
         timeText = match[2]; // 2 PM
         title = subject;
+      } else if (i === 4) {
+        // "Create a budget review for July 25th at 3pm"
+        const subject = match[1]; // budget review
+        const dateStr = match[2]; // July 25th
+        timeText = match[3]; // 3pm
+        title = subject;
+        dateText = dateStr;
+        // Capture the full original prompt for better context-aware parsing
+        fullPrompt = prompt;
       }
       
-      // Extract date from the original prompt if not captured
-      if (dateText === 'today') {
-        if (prompt.toLowerCase().includes('tomorrow')) {
-          dateText = 'tomorrow';
-        } else if (prompt.toLowerCase().includes('friday')) {
-          dateText = 'friday';
-        }
+      // Make sure we're using the full prompt for better context-aware parsing
+      if (!fullPrompt) {
+        fullPrompt = prompt;
       }
       
-      const startDate = parseDateTime(dateText, timeText);
+      const startDate = parseDateTime(dateText, timeText, fullPrompt);
       let endDate = startDate;
       
       // If we have a time, default to 1 hour duration
