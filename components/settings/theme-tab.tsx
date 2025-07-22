@@ -124,60 +124,6 @@ export function ThemeTab() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Current Theme Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Theme</CardTitle>
-          <CardDescription>
-            Information about your selected theme
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Theme Name:</span>
-              <span className="text-sm">{currentTheme.name}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Author:</span>
-              <span className="text-sm">{currentTheme.author}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Mode:</span>
-              <span className="text-sm">{isDarkMode ? 'Dark' : 'Light'}</span>
-            </div>
-            <div>
-              <span className="text-sm font-medium">Description:</span>
-              <p className="text-sm text-muted-foreground mt-1">
-                {currentTheme.description}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Reset Button */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Reset Theme</CardTitle>
-          <CardDescription>
-            Reset to the default theme and light mode
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setTheme('default');
-              useThemeStore.getState().setDarkMode(false);
-            }}
-            className="w-full"
-          >
-            Reset to Default
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }

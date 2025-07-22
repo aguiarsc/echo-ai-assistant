@@ -7,21 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { GEMINI_MODELS } from "@/lib/gemini"
-import { Edit, MessageCircle, Plus, Settings, Trash, Moon, Sun, Folder, Pin, PinOff } from "lucide-react"
+import { Edit, MessageCircle, Plus, Settings, Trash, Folder, Pin, PinOff, Calendar as CalendarIcon } from "lucide-react"
 import { useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { SettingsPanel } from "@/components/chat/settings-panel"
-import { useTheme } from "next-themes"
 import Image from "next/image"
 import { FilesTab } from "@/components/files/files-tab"
+import { CalendarTab } from "@/components/calendar/calendar-tab"
 
 export function Sidebar() {
   const [open, setOpen] = useState(true)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [renameId, setRenameId] = useState<string | null>(null)
   const [newChatName, setNewChatName] = useState("")
-  const [activeTab, setActiveTab] = useState<"chats" | "files">("chats")
-  const { theme, setTheme } = useTheme()
+  const [activeTab, setActiveTab] = useState<"chats" | "files" | "calendar">("chats")
   
   const { 
     chats, 
@@ -108,6 +107,20 @@ export function Sidebar() {
             <Folder className={cn("h-4 w-4", !open && "mx-auto")} />
             {open && <span className="ml-2 text-sm">Files</span>}
           </button>
+
+          <button 
+            className={cn(
+              "flex items-center justify-center flex-1 py-2 px-3 border-b-2 transition-colors",
+              activeTab === "calendar" 
+                ? "border-primary text-primary" 
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+            onClick={() => setActiveTab("calendar")}
+          >
+            <CalendarIcon className={cn("h-4 w-4", !open && "mx-auto")} />
+            {open && <span className="ml-2 text-sm">Calendar</span>}
+          </button>
+
         </div>
         
         {/* Chat Tab Content */}
@@ -267,41 +280,16 @@ export function Sidebar() {
           </div>
         )}
         
+        {/* Calendar Tab Content */}
+        {activeTab === "calendar" && (
+          <div className="flex-1 overflow-hidden">
+            <CalendarTab open={open} />
+          </div>
+        )}
+        
         <div className="flex items-center p-4 shrink-0 h-24">
           {open && (
             <div className="flex items-center justify-between px-2 py-1">
-              {/* Theme toggle buttons */}
-              <div className="flex gap-1">
-                {/* Use useEffect to ensure these components are only rendered on the client side */}
-                {typeof window !== "undefined" && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={cn(
-                        "h-7 w-7 rounded-full",
-                        theme === "light" && "bg-primary/10"
-                      )}
-                      onClick={() => setTheme("light")}
-                    >
-                      <Sun className="h-4 w-4" />
-                      <span className="sr-only">Light mode</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={cn(
-                        "h-7 w-7 rounded-full",
-                        theme === "dark" && "bg-primary/10"
-                      )}
-                      onClick={() => setTheme("dark")}
-                    >
-                      <Moon className="h-4 w-4" />
-                      <span className="sr-only">Dark mode</span>
-                    </Button>
-                  </>
-                )}
-              </div>
             </div>
           )}
           

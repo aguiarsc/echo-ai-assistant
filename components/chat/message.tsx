@@ -273,6 +273,9 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
     // These typically appear before the actual markdown content
     content = content.replace(/^(Okay|Here|Sure|Alright)[^\n]*?\s*\n+/, '');
     
+    // This ensures bullet points and lists render properly in markdown
+    content = content.replace(/\n/g, '\n\n').replace(/\n\n\n+/g, '\n\n');
+    
     return content;
   }
 
@@ -644,7 +647,7 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
                     </ReactMarkdown>
                     
                     {/* Grounding metadata display */}
-                    {message.groundingMetadata && (
+                    {message.groundingMetadata && message.groundingMetadata.groundingChunks && message.groundingMetadata.groundingChunks.length > 0 && (
                       <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-2 h-2 bg-red-500 rounded-full"></div>
