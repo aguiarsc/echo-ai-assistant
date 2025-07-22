@@ -76,6 +76,7 @@ export function useChat() {
   // Handle function calls from Gemini
   const handleFunctionCall = useCallback(async (functionCall: any, chatId: string, messageId: string) => {
     try {
+      console.log('📞 Function call received:', functionCall.name, 'with args:', functionCall.args);
       let result;
       
       switch (functionCall.name) {
@@ -92,10 +93,18 @@ export function useChat() {
           result = await calendarFunctions.search_calendar_events(functionCall.args);
           break;
         default:
-          result = { success: false, message: `Unknown function: ${functionCall.name}` };
+          console.warn('⚠️ Unknown function called:', functionCall.name);
+          // Check if it's a common misnaming
+          if (functionCall.name === 'get_calendar_events') {
+            console.log('🔄 Redirecting get_calendar_events to list_calendar_events');
+            result = await calendarFunctions.list_calendar_events(functionCall.args);
+          } else {
+            result = { success: false, message: `Unknown function: ${functionCall.name}. Available functions: create_calendar_event, update_calendar_event, list_calendar_events, search_calendar_events` };
+          }
       }
       
       // Add the function result to the stream buffer
+      console.log('📊 Function result:', result);
       const resultText = result.success 
         ? `✅ ${result.message}`
         : `❌ ${result.message}`;

@@ -77,7 +77,7 @@ export const calendarFunctionDeclarations = [
   },
   {
     name: 'list_calendar_events',
-    description: 'List all calendar events within a specific date range. Use this to show events for today, tomorrow, this week, etc.',
+    description: 'List and retrieve all calendar events within a specific date range. Use this function when user asks to "show", "list", "get", or "display" events for any time period (today, tomorrow, this week, this month, etc.). This is the primary function for viewing calendar events.',
     parameters: {
       type: 'object',
       properties: {
@@ -235,6 +235,7 @@ export const calendarFunctions = {
 
   list_calendar_events: async (args: { startDate: string; endDate: string }) => {
     try {
+      console.log('📅 Listing events from', args.startDate, 'to', args.endDate);
       const startDateObj = new Date(args.startDate);
       const endDateObj = new Date(args.endDate);
       
@@ -250,12 +251,15 @@ export const calendarFunctions = {
     } else if (events.length === 1) {
       const event = events[0];
       const timeStr = event.allDay ? 'All day' : `${event.startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-      message = `Found 1 event: "${event.title}" (${timeStr})`;
+      const dateStr = event.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      message = `Found 1 event:\n\n• **${event.title}** - ${dateStr} at ${timeStr}`;
     } else {
-      message = `Found ${events.length} events:\n${events.map(event => {
+      const eventList = events.map(event => {
         const timeStr = event.allDay ? 'All day' : `${event.startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-        return `• "${event.title}" (${timeStr})`;
-      }).join('\n')}`;
+        const dateStr = event.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return `• **${event.title}** - ${dateStr} at ${timeStr}`;
+      }).join('\n');
+      message = `Found ${events.length} events:\n\n${eventList}`;
     }
     
     return {

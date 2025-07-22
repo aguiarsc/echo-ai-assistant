@@ -101,6 +101,7 @@ export async function generateGeminiResponse({
           
           for (const part of chunk.candidates[0].content.parts) {
             if (part.functionCall) {
+              console.log('🔧 API: Function call detected:', part.functionCall);
               functionCalls.push(part.functionCall);
               onStream && onStream("", null, [part.functionCall]);
               continue;
@@ -192,6 +193,11 @@ export async function generateGeminiResponse({
         chatConfig.tools = [{ googleSearch: {} }];
       }
       
+      // Add function calling tools if provided
+      if (tools && tools.length > 0) {
+        chatConfig.tools = chatConfig.tools ? [...chatConfig.tools, ...tools] : tools;
+      }
+      
       const chat = genAI.chats.create({
         model,
         history: history.slice(0, -1),
@@ -210,14 +216,30 @@ export async function generateGeminiResponse({
         let finalUsageMetadata = null;
         let groundingMetadata = null;
 
+        let functionCalls: any[] = [];
+        
         for await (const chunk of result) {
           if (chunk.usageMetadata) finalUsageMetadata = chunk.usageMetadata;
           if (chunk.candidates?.[0]?.groundingMetadata) {
             groundingMetadata = chunk.candidates[0].groundingMetadata;
           }
+          
+          // Handle function calls
+          if (chunk.candidates?.[0]?.content?.parts) {
+            for (const part of chunk.candidates[0].content.parts) {
+              if (part.functionCall) {
+                console.log('🔧 API: Function call detected (multi-turn):', part.functionCall);
+                functionCalls.push(part.functionCall);
+                onStream && onStream("", null, [part.functionCall]);
+                continue;
+              }
+            }
+          }
+          
           if (!chunk.candidates?.[0]?.content?.parts) continue;
           
           for (const part of chunk.candidates[0].content.parts) {
+            if (part.functionCall) continue; // Already handled above
             if (!part.text) continue;
             if (part.thought) {
               thinkingText += part.text;
@@ -231,7 +253,7 @@ export async function generateGeminiResponse({
           }
         }
 
-        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata, groundingMetadata };
+        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata, groundingMetadata, functionCalls };
       } else {
         const response = await chat.sendMessage({ message: messageParts });
         let thinking = null;
