@@ -7,11 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { GEMINI_MODELS } from "@/lib/gemini"
-import { Edit, MessageCircle, Plus, Settings, Trash, Moon, Sun, Folder, Pin, PinOff, Calendar as CalendarIcon } from "lucide-react"
+import { Edit, MessageCircle, Plus, Settings, Trash, Folder, Pin, PinOff, Calendar as CalendarIcon } from "lucide-react"
 import { useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { SettingsPanel } from "@/components/chat/settings-panel"
-import { useTheme } from "next-themes"
+
 import Image from "next/image"
 import { FilesTab } from "@/components/files/files-tab"
 import { CalendarTab } from "@/components/calendar/calendar-tab"
@@ -22,7 +22,7 @@ export function Sidebar() {
   const [renameId, setRenameId] = useState<string | null>(null)
   const [newChatName, setNewChatName] = useState("")
   const [activeTab, setActiveTab] = useState<"chats" | "files" | "calendar">("chats")
-  const { theme, setTheme } = useTheme()
+
   
   const { 
     chats, 
@@ -289,42 +289,6 @@ export function Sidebar() {
         )}
         
         <div className="flex items-center p-4 shrink-0 h-24">
-          {open && (
-            <div className="flex items-center justify-between px-2 py-1">
-              {/* Theme toggle buttons */}
-              <div className="flex gap-1">
-                {/* Use useEffect to ensure these components are only rendered on the client side */}
-                {typeof window !== "undefined" && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={cn(
-                        "h-7 w-7 rounded-full",
-                        theme === "light" && "bg-primary/10"
-                      )}
-                      onClick={() => setTheme("light")}
-                    >
-                      <Sun className="h-4 w-4" />
-                      <span className="sr-only">Light mode</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={cn(
-                        "h-7 w-7 rounded-full",
-                        theme === "dark" && "bg-primary/10"
-                      )}
-                      onClick={() => setTheme("dark")}
-                    >
-                      <Moon className="h-4 w-4" />
-                      <span className="sr-only">Dark mode</span>
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
           
           <Button 
             variant="ghost" 
