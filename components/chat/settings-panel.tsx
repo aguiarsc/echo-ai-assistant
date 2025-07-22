@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { GEMINI_MODELS, DEFAULT_GENERATION_PARAMS, HarmBlockThreshold, HarmCategory } from "@/lib/gemini"
 import { PROMPT_PRESETS } from "@/lib/ai/presets"
 import { ThemeAvatar } from "@/components/ui/theme-avatar"
+import { ThemeTab } from "@/components/settings/theme-tab"
 import { ExternalLink, Loader2, CheckCircle, XCircle, Zap, Brain, Settings2 } from "lucide-react"
 
 interface SettingsPanelProps {
@@ -112,9 +113,10 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
 
   return (
     <Tabs defaultValue="general">
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-6">
         <TabsTrigger value="general">General</TabsTrigger>
         <TabsTrigger value="ai-presets">AI Presets</TabsTrigger>
+        <TabsTrigger value="themes">Themes</TabsTrigger>
         <TabsTrigger value="appearance">Appearance</TabsTrigger>
         <TabsTrigger value="generation">Generation</TabsTrigger>
         <TabsTrigger value="safety">Safety</TabsTrigger>
@@ -604,6 +606,10 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             <Button onClick={onClose}>Close</Button>
           </CardFooter>
         </Card>
+      </TabsContent>
+
+      <TabsContent value="themes">
+        <ThemeTab />
       </TabsContent>
     </Tabs>
   )
