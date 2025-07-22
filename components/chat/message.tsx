@@ -312,6 +312,11 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
     // These typically appear before the actual markdown content
     content = content.replace(/^(Okay|Here|Sure|Alright)[^\n]*?\s*\n+/, '');
     
+    // Fix newlines for proper markdown rendering
+    // Convert single newlines to double newlines for proper paragraph breaks
+    // This ensures bullet points and lists render properly in markdown
+    content = content.replace(/\n/g, '\n\n').replace(/\n\n\n+/g, '\n\n');
+    
     return content;
   }
 
