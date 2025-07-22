@@ -470,26 +470,9 @@ export function CalendarTab({ open }: CalendarTabProps) {
       {/* Calendar FAQ Dialog */}
       <Dialog open={faqDialogOpen} onOpenChange={setFaqDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-xl font-bold">
-              <HelpCircle className="h-5 w-5 mr-2 text-primary" />
-              Calendar Guide
-            </DialogTitle>
-            <DialogDescription>
-              Learn how to manage your calendar using advanced AI function calling with natural language commands.
-            </DialogDescription>
-          </DialogHeader>
+
           
           <div className="space-y-6 py-4">
-            <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 mb-4">
-              <div className="flex items-center mb-2">
-                <span className="text-2xl mr-2">🚀</span>
-                <h4 className="font-semibold text-blue-800 dark:text-blue-200">New: Advanced AI Function Calling</h4>
-              </div>
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                Our calendar system now uses Gemini's native function calling for more accurate and reliable natural language processing. The AI directly calls calendar functions instead of using pattern matching, resulting in better understanding of complex requests.
-              </p>
-            </div>
             
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">Calendar Commands</h3>
@@ -530,41 +513,10 @@ export function CalendarTab({ open }: CalendarTabProps) {
                   <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Look for events with "budget" in the title</code>
                   <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Find all client meetings</code>
                 </div>
-                
-                <div className="space-y-1">
-                  <div className="flex items-center text-sm font-semibold">
-                    <Command className="h-3 w-3 mr-1 text-primary" /> 
-                    Updating Events
-                  </div>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">Reschedule the team meeting to 10 AM tomorrow</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Update the project deadline to next Friday at 5 PM</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Change my dentist appointment to 3 PM next week</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Move the budget review to Monday morning</code>
-                </div>
               </div>
             </div>
             
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">How It Works</h3>
-              <div className="bg-muted/50 rounded-md p-3 space-y-2">
-                <div className="flex items-center text-sm">
-                  <span className="text-lg mr-2">🧠</span>
-                  <span><strong>Smart AI Analysis:</strong> Gemini AI analyzes your natural language request</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <span className="text-lg mr-2">⚡</span>
-                  <span><strong>Function Calling:</strong> AI directly calls appropriate calendar functions</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <span className="text-lg mr-2">📅</span>
-                  <span><strong>Real-time Updates:</strong> Calendar is updated instantly with ✅/❌ feedback</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <span className="text-lg mr-2">🎯</span>
-                  <span><strong>Context Aware:</strong> AI knows current date/time for accurate calculations</span>
-                </div>
-              </div>
-            </div>
+
             
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">Pro Tips</h3>
@@ -573,10 +525,7 @@ export function CalendarTab({ open }: CalendarTabProps) {
                 <li><strong>Flexible Dates:</strong> Use relative dates like "tomorrow", "next Friday", "in 2 weeks"</li>
                 <li><strong>Smart Defaults:</strong> If you don't specify an end time, events default to 1 hour duration</li>
                 <li><strong>Context Aware:</strong> AI knows today's date and calculates relative dates accurately</li>
-                <li><strong>Instant Feedback:</strong> Get immediate ✅ success or ❌ error messages</li>
-                <li><strong>Visual Interface:</strong> Use the Calendar tab for manual event management</li>
-                <li><strong>Safety First:</strong> Event deletion is manual-only through the Calendar tab for safety</li>
-                <li><strong>Complex Requests:</strong> AI handles complex scheduling like "Move my 3 PM meeting to tomorrow"</li>
+                <li><strong>Manual Management:</strong> Use the Calendar tab to edit, update, or delete events manually</li>
               </ul>
             </div>
           </div>

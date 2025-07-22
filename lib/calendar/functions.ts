@@ -38,44 +38,6 @@ export const calendarFunctionDeclarations = [
     }
   },
   {
-    name: 'update_calendar_event',
-    description: 'Update an existing calendar event',
-    parameters: {
-      type: 'object',
-      properties: {
-        eventId: {
-          type: 'string',
-          description: 'The ID of the event to update'
-        },
-        title: {
-          type: 'string',
-          description: 'New title for the event'
-        },
-        description: {
-          type: 'string',
-          description: 'New description for the event'
-        },
-        startDate: {
-          type: 'string',
-          description: 'New start date and time in ISO format'
-        },
-        endDate: {
-          type: 'string',
-          description: 'New end date and time in ISO format'
-        },
-        allDay: {
-          type: 'boolean',
-          description: 'Whether this is an all-day event'
-        },
-        color: {
-          type: 'string',
-          description: 'New color for the event in hex format'
-        }
-      },
-      required: ['eventId']
-    }
-  },
-  {
     name: 'list_calendar_events',
     description: 'List and retrieve all calendar events within a specific date range. Use this function when user asks to "show", "list", "get", or "display" events for any time period (today, tomorrow, this week, this month, etc.). This is the primary function for viewing calendar events.',
     parameters: {
@@ -170,69 +132,6 @@ export const calendarFunctions = {
     }
   },
 
-  update_calendar_event: async (args: {
-    eventId: string;
-    title?: string;
-    description?: string;
-    startDate?: string;
-    endDate?: string;
-    allDay?: boolean;
-    color?: string;
-  }) => {
-    try {
-      const { events } = useCalendarStore.getState();
-      const existingEvent = events.find(e => e.id === args.eventId);
-      
-      if (!existingEvent) {
-        throw new Error('Event not found');
-      }
-      
-      const updates: Partial<CalendarEvent> = {};
-      
-      if (args.title !== undefined) updates.title = args.title;
-      if (args.description !== undefined) updates.description = args.description;
-      if (args.allDay !== undefined) updates.allDay = args.allDay;
-      if (args.color !== undefined) updates.color = args.color;
-      
-      if (args.startDate) {
-        const startDateObj = new Date(args.startDate);
-        if (isNaN(startDateObj.getTime())) {
-          throw new Error('Invalid start date format');
-        }
-        updates.startDate = startDateObj;
-      }
-      
-      if (args.endDate) {
-        const endDateObj = new Date(args.endDate);
-        if (isNaN(endDateObj.getTime())) {
-          throw new Error('Invalid end date format');
-        }
-        updates.endDate = endDateObj;
-      }
-      
-      // Validate dates if both are being updated
-      const finalStartDate = updates.startDate || existingEvent.startDate;
-      const finalEndDate = updates.endDate || existingEvent.endDate;
-      
-      if (finalStartDate >= finalEndDate) {
-        throw new Error('End date must be after start date');
-      }
-      
-      await useCalendarStore.getState().updateEvent(args.eventId, updates);
-      
-      return {
-        success: true,
-        message: `Calendar event "${existingEvent.title}" updated successfully`,
-        eventId: args.eventId
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message: `Failed to update calendar event: ${error.message}`
-      };
-    }
-  },
-
   list_calendar_events: async (args: { startDate: string; endDate: string }) => {
     try {
       console.log('📅 Listing events from', args.startDate, 'to', args.endDate);
@@ -262,18 +161,22 @@ export const calendarFunctions = {
       message = `Found ${events.length} events:\n\n${eventList}`;
     }
     
+    const eventData = events.map(event => ({
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      startDate: event.startDate.toISOString(),
+      endDate: event.endDate.toISOString(),
+      allDay: event.allDay,
+      color: event.color
+    }));
+  
+    console.log('📊 List function returning event data:', eventData);
+  
     return {
       success: true,
       message,
-      events: events.map(event => ({
-        id: event.id,
-        title: event.title,
-        description: event.description,
-        startDate: event.startDate.toISOString(),
-        endDate: event.endDate.toISOString(),
-        allDay: event.allDay,
-        color: event.color
-      }))
+      events: eventData
     };
   } catch (error: any) {
       return {

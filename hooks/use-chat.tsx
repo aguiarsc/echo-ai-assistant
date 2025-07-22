@@ -83,9 +83,6 @@ export function useChat() {
         case 'create_calendar_event':
           result = await calendarFunctions.create_calendar_event(functionCall.args);
           break;
-        case 'update_calendar_event':
-          result = await calendarFunctions.update_calendar_event(functionCall.args);
-          break;
         case 'list_calendar_events':
           result = await calendarFunctions.list_calendar_events(functionCall.args);
           break;
@@ -257,7 +254,7 @@ export function useChat() {
         hour12: true 
       });
       
-      const dateTimeContext = `\n\n🗓️ IMPORTANT - CURRENT DATE AND TIME CONTEXT:\n⚠️  IGNORE ANY PREVIOUS DATE KNOWLEDGE - USE ONLY THIS CURRENT INFORMATION:\n- RIGHT NOW it is: ${currentDateTime}\n- TODAY is: ${currentDateString}\n- Current time: ${currentTimeString}\n- For calendar operations, calculate relative dates from TODAY (${currentDateString})\n- Tomorrow = ${new Date(now.getTime() + 24*60*60*1000).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n- Always use ISO format for dates in function calls (YYYY-MM-DDTHH:MM:SS)\n- When listing events for "tomorrow", use the date range for the day after TODAY`;
+      const dateTimeContext = `\n\n🗺️ IMPORTANT - CURRENT DATE AND TIME CONTEXT:\n⚠️  IGNORE ANY PREVIOUS DATE KNOWLEDGE - USE ONLY THIS CURRENT INFORMATION:\n- RIGHT NOW it is: ${currentDateTime}\n- TODAY is: ${currentDateString}\n- Current time: ${currentTimeString}\n- For calendar operations, calculate relative dates from TODAY (${currentDateString})\n- Tomorrow = ${new Date(now.getTime() + 24*60*60*1000).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n- Always use ISO format for dates in function calls (YYYY-MM-DDTHH:MM:SS)\n- When listing events for \"tomorrow\", use the date range for the day after TODAY\n\n📅 CALENDAR CAPABILITIES:\n- You can CREATE new calendar events using natural language\n- You can LIST/VIEW existing events for any date range\n- You can SEARCH for events by title or description\n- You CANNOT update or delete existing events - users must do this manually via the UI`;
       
       enhancedSystemInstruction = enhancedSystemInstruction 
         ? `${enhancedSystemInstruction}${dateTimeContext}`
