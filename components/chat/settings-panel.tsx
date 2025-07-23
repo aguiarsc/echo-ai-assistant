@@ -117,7 +117,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
         <TabsTrigger value="general">General</TabsTrigger>
         <TabsTrigger value="ai-presets">AI Presets</TabsTrigger>
         <TabsTrigger value="themes">Themes</TabsTrigger>
-        <TabsTrigger value="appearance">Appearance</TabsTrigger>
+        <TabsTrigger value="appearance">Avatars</TabsTrigger>
         <TabsTrigger value="generation">Generation</TabsTrigger>
         <TabsTrigger value="safety">Safety</TabsTrigger>
       </TabsList>
