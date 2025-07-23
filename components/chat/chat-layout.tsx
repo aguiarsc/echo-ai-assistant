@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { useChatStore, initializeDexieStore } from "@/lib/gemini/store"
 import { useFilesStore } from "@/lib/files/store"
 import { useFileContextStore } from "@/lib/files/context-store"
+import { useCalendarStore } from "@/lib/calendar/store"
 import { useToast } from "@/components/ui/use-toast"
 import { useSecureApiKey } from "@/hooks/use-secure-api-key"
 import { useEffect, useRef, useState } from "react"
@@ -52,6 +53,7 @@ export function ChatLayout() {
         await initializeDexieStore(); // Chat store
         await useFilesStore.getState().initializeDexie(); // Files store
         await useFileContextStore.getState().initializeDexie(); // File context store
+        await useCalendarStore.getState().loadEvents(); // Calendar store
         
         // Run cleanup of old chats (older than 48h and not pinned)
         console.log('Cleaning up old chats...');

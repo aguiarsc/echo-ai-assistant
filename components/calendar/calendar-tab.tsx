@@ -316,7 +316,12 @@ export function CalendarTab({ open }: CalendarTabProps) {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{event.title}</p>
+                        <p className="font-medium text-sm">
+                          {event.title.length > 50 
+                            ? event.title.substring(0, 50) + '...' 
+                            : event.title
+                          }
+                        </p>
                         <div className="flex items-center gap-1 mt-1">
                           <Clock className="h-3 w-3 text-muted-foreground" />
                           <p className="text-xs text-muted-foreground">
@@ -324,8 +329,11 @@ export function CalendarTab({ open }: CalendarTabProps) {
                           </p>
                         </div>
                         {event.description && (
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {event.description}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {event.description.length > 80 
+                              ? event.description.substring(0, 80) + '...' 
+                              : event.description
+                            }
                           </p>
                         )}
                       </div>
@@ -488,11 +496,23 @@ export function CalendarTab({ open }: CalendarTabProps) {
                 <div className="space-y-1">
                   <div className="flex items-center text-sm font-semibold">
                     <Command className="h-3 w-3 mr-1 text-primary" /> 
-                    Creating Events
+                    Creating Single Events
                   </div>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">Schedule a meeting with the team tomorrow at 2 PM</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">Create a meeting with the team tomorrow at 2 PM</code>
                   <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Add a dentist appointment on Friday at 10:30 AM</code>
-                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Create an event for the project deadline on July 25th</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Schedule project deadline for July 25th all day</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Add lunch meeting with client next Tuesday 12:30 PM</code>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="flex items-center text-sm font-semibold">
+                    <Command className="h-3 w-3 mr-1 text-primary" /> 
+                    Creating Events from Files
+                  </div>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block">Add all events from the context to my calendar</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Create calendar events from the meeting notes</code>
+                  <code className="text-xs bg-muted rounded px-1 py-0.5 block mt-1">Extract events from the project schedule and add to calendar</code>
+                  <p className="text-xs text-muted-foreground mt-1">💡 Select files from the file tree first, then use these commands</p>
                 </div>
                 
                 <div className="space-y-1">
@@ -556,6 +576,8 @@ export function CalendarTab({ open }: CalendarTabProps) {
                 <li>Include relevant details like participants or location in your request</li>
                 <li>You can create all-day events by omitting specific times</li>
                 <li>Use natural language - the AI understands various date formats</li>
+                <li>Select files from the file tree to provide context for event extraction</li>
+                <li>AI can extract multiple events from documents like meeting notes or schedules</li>
                 <li>Days with events are highlighted on the calendar with a colored background and dot</li>
                 <li>Click on any calendar day to view events for that specific date</li>
                 <li>Use the Calendar tab for manual event management with the visual interface</li>

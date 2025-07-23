@@ -166,6 +166,12 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
   const isFileEditSuccess = message.content?.startsWith('FILE_EDIT_SUCCESS:')
   const isFileEditError = message.content?.startsWith('FILE_EDIT_ERROR:')
   
+  // Check if this is a calendar event message
+  const isCalendarEventMessage = message.content?.startsWith('CALENDAR_EVENT')
+  const isCalendarEventSuccess = message.content?.startsWith('CALENDAR_EVENT_SUCCESS:')
+  const isCalendarEventsSuccess = message.content?.startsWith('CALENDAR_EVENTS_SUCCESS:')
+  const isCalendarEventError = message.content?.startsWith('CALENDAR_EVENT_ERROR:')
+  
   // Check if this message has context files
   const hasContextFiles = message.content?.startsWith('CONTEXT_FILES_PROVIDED:')
   
@@ -221,6 +227,36 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
   
   const fileEditData = parseFileEditMessage()
   
+  // Parse calendar event message data
+  const parseCalendarEventMessage = () => {
+    if (!isCalendarEventMessage) return null
+    
+    if (isCalendarEventSuccess) {
+      const parts = message.content.replace('CALENDAR_EVENT_SUCCESS:', '').split(':')
+      const eventTitle = parts[0] || ''
+      const confidence = parseFloat(parts[1]) || 0
+      return { type: 'success', eventTitle, confidence, isMultiple: false }
+    }
+    
+    if (isCalendarEventsSuccess) {
+      const parts = message.content.replace('CALENDAR_EVENTS_SUCCESS:', '').split(':')
+      const eventCount = parseInt(parts[0]) || 0
+      const eventTitles = parts[1] ? parts[1].split('|') : []
+      const confidence = parseFloat(parts[2]) || 0
+      return { type: 'success', eventCount, eventTitles, confidence, isMultiple: true }
+    }
+    
+    if (isCalendarEventError) {
+      const parts = message.content.replace('CALENDAR_EVENT_ERROR:', '').split(':')
+      const eventType = parts[0] || 'single'
+      return { type: 'error', eventType }
+    }
+    
+    return null
+  }
+  
+  const calendarEventData = parseCalendarEventMessage()
+  
   // Parse context files data
   const parseContextFiles = () => {
     if (!hasContextFiles || !message.content) return null
@@ -251,6 +287,11 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
     
     // Handle file edit messages specially
     if (isFileEditMessage) {
+      return null // We'll render these with special UI
+    }
+    
+    // Handle calendar event messages specially
+    if (isCalendarEventMessage) {
       return null // We'll render these with special UI
     }
     
@@ -545,6 +586,83 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
                                   </div>
                                   <div className="mt-2 pt-2 border-t border-red-200/30 dark:border-red-800/30">
                                     <span className="text-red-700 dark:text-red-300">Please try again or edit the file manually.</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Calendar Event UI */}
+                    {isCalendarEventMessage && calendarEventData && (
+                      <div className={cn(
+                        "mb-4 rounded-lg p-4 border transition-all duration-300",
+                        calendarEventData.type === 'success'
+                          ? "bg-gradient-to-r from-blue-50/50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/30 border-blue-200/30 dark:border-blue-800/30"
+                          : "bg-gradient-to-r from-red-50/50 to-red-100/50 dark:from-red-950/20 dark:to-red-900/30 border-red-200/30 dark:border-red-800/30"
+                      )}>
+                        <div className="flex items-start gap-3">
+                          <div className={cn(
+                            "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center",
+                            calendarEventData.type === 'success'
+                              ? "bg-blue-500/20 dark:bg-blue-400/20"
+                              : "bg-red-500/20 dark:bg-red-400/20"
+                          )}>
+                            {calendarEventData.type === 'success' ? (
+                              <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            ) : (
+                              <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            {calendarEventData.type === 'success' ? (
+                              <div>
+                                <div className="font-medium text-blue-700 dark:text-blue-300 mb-2">
+                                  {calendarEventData.isMultiple 
+                                    ? `Successfully created ${calendarEventData.eventCount} calendar events!`
+                                    : 'Calendar event created successfully!'
+                                  }
+                                </div>
+                                <div className="space-y-1 text-sm text-blue-600/90 dark:text-blue-400/90">
+                                  {calendarEventData.isMultiple ? (
+                                    <div className="space-y-1">
+                                      {calendarEventData.eventTitles?.map((title, index) => (
+                                        <div key={index} className="flex items-center gap-2">
+                                          <span>📅</span>
+                                          <span><strong>Event {index + 1}:</strong> <code className="bg-blue-100/50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">{title}</code></span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <span>📅</span>
+                                      <span><strong>Event:</strong> <code className="bg-blue-100/50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">{calendarEventData.eventTitle}</code></span>
+                                    </div>
+                                  )}
+                                  
+                                  {(calendarEventData.confidence ?? 1) < 0.8 && (
+                                    <div className="flex items-center gap-2 mt-2">
+                                      <span>💡</span>
+                                      <span className="text-blue-600/70 dark:text-blue-400/70">Please review the created events in the Calendar tab to ensure all details are correct.</span>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="mt-2 pt-2 border-t border-blue-200/30 dark:border-blue-800/30">
+                                    <span className="text-blue-700 dark:text-blue-300">The events have been added to your calendar and are ready to view.</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <div className="font-medium text-red-700 dark:text-red-300 mb-2">
+                                  ❌ Failed to create calendar {calendarEventData.eventType === 'multiple' ? 'events' : 'event'}
+                                </div>
+                                <div className="space-y-1 text-sm text-red-600/90 dark:text-red-400/90">
+                                  <div className="mt-2 pt-2 border-t border-red-200/30 dark:border-red-800/30">
+                                    <span className="text-red-700 dark:text-red-300">Please try again or create the event manually in the Calendar tab.</span>
                                   </div>
                                 </div>
                               </div>
