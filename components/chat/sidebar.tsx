@@ -64,7 +64,7 @@ export function Sidebar() {
       <div className="fixed top-3 left-3 z-50">
         <button 
           onClick={() => setOpen(!open)} 
-          className="p-1 rounded-lg hover:bg-accent bg-background shadow-md transition-transform"
+          className="transition-transform"
           aria-label={open ? "Close sidebar" : "Open sidebar"}
         >
           <Image src="/images/gemini icon.png" alt="Gemini" width={28} height={28} />
