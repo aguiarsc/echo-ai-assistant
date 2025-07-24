@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { PaperclipIcon, ArrowUp, StopCircle, X, Brain, Files } from "lucide-react"
+import { PaperclipIcon, ArrowUp, StopCircle, X, Brain, Files, Globe, ChevronDown, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -9,6 +9,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { useChatStore } from "@/lib/gemini/store"
 import { useChat } from "@/hooks/use-chat"
 import { cn } from "@/lib/utils"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import { FileUpload } from "@/components/chat/file-upload"
 import { ModelSelector } from "@/components/chat/model-selector"
 import { FileMetadata } from "@/lib/gemini/files-api"
@@ -557,19 +564,52 @@ The user wants the raw content only, as if they were writing the file themselves
             </Button>
           )}
 
-          <div className="flex items-center gap-4 border-l pl-4">
-            <Label htmlFor="thinking-mode" className="cursor-pointer">
-              <Brain className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-            </Label>
-            <Switch
-              id="thinking-mode"
-              checked={generationParams.thinkingEnabled}
-              onCheckedChange={(checked) =>
-                setGenerationParams({ thinkingEnabled: checked })
-              }
-              disabled={isStreaming}
-              className="h-5 w-9 data-[state=checked]:bg-primary"
-            />
+          <div className="flex items-center border-l pl-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md flex items-center gap-2"
+                  disabled={isStreaming}
+                >
+                  <Settings className="h-4 w-4" />
+                  Tools
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => setGenerationParams({ thinkingEnabled: !generationParams.thinkingEnabled })}
+                >
+                  <div className="flex items-center gap-2">
+                    <Brain className="h-4 w-4" />
+                    <span>Think longer</span>
+                  </div>
+                  <Switch
+                    checked={generationParams.thinkingEnabled}
+                    onCheckedChange={() => {}}
+                    className="h-4 w-7 pointer-events-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 border border-muted-foreground/30 data-[state=checked]:border-primary"
+                  />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => setGenerationParams({ groundingEnabled: !generationParams.groundingEnabled })}
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    <span>Web search</span>
+                  </div>
+                  <Switch
+                    checked={generationParams.groundingEnabled || false}
+                    onCheckedChange={() => {}}
+                    className="h-4 w-7 pointer-events-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 border border-muted-foreground/30 data-[state=checked]:border-primary"
+                  />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
