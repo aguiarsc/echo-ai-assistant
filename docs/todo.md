@@ -1,0 +1,1 @@
+- URL CONTEXT: URL context tool to provide Gemini with URLs as additional context for your prompt. The model can then retrieve content from the URLs and use that content to inform and shape its response.
