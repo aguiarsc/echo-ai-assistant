@@ -127,6 +127,8 @@ export interface Chat {
   updatedAt: number;
   systemInstruction?: string;
   pinned?: boolean; // Flag to prevent auto-deletion
+  titleGenerated?: boolean; // Track if title was auto-generated to prevent overwriting manual titles
+  lastTitleMessageCount?: number; // Message count when title was last generated (for periodic regeneration)
   tokenCount?: {
     total: number;
     prompt: number;

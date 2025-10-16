@@ -29,8 +29,7 @@ import { FileMetadata } from "@/lib/gemini/files-api"
 import { FileContext, FileContextSummary } from "@/components/chat/file-context"
 import { useFileContextStore } from "@/lib/files/context-store"
 import { createChatAttachments, convertFileToContext, generateFileContextInstruction } from "@/lib/gemini/file-context-adapter"
-import { detectFileCreationIntent } from "@/lib/ai/file-intent"
-import { detectFileEditIntent } from "@/lib/ai/edit-intent"
+import { parseFileIntent } from "@/lib/ai/intent-parser"
 import { generateGeminiResponse } from "@/lib/gemini/api"
 import { useFilesStore } from "@/lib/files/store"
 
@@ -93,17 +92,30 @@ export function ChatInput() {
     const messageToSend = message.trim()
     setMessage("")
 
-    // Detect file edit intent first (takes priority over file creation)
-    const editIntent = detectFileEditIntent(messageToSend)
-    if (editIntent) {
+    // Use Gemini to parse intent for file operations (more robust than regex)
+    const chatStore = useChatStore.getState()
+    
+    // Get last 5 messages for context (helps resolve "it", "the file", etc.)
+    const recentMessages = currentChat.messages
+      .slice(-5)
+      .filter(m => m.role !== 'thinking')
+      .map(m => ({ 
+        role: m.role === 'user' ? 'user' as const : 'model' as const, 
+        content: m.content 
+      }))
+    
+    const intent = await parseFileIntent(messageToSend, chatStore.apiKey, currentChat.model, recentMessages)
+    
+    // Handle file edit intent
+    if (intent && intent.type === 'edit') {
       try {
         const filesStore = useFilesStore.getState()
         
         // Find the file to edit
         const fileToEdit = Object.values(filesStore.files).find(
           node => node.type === 'file' && 
-          (node.name.toLowerCase() === editIntent.fileName.toLowerCase() ||
-           node.path.toLowerCase().includes(editIntent.fileName.toLowerCase()))
+          (node.name.toLowerCase() === intent.fileName.toLowerCase() ||
+           node.path.toLowerCase().includes(intent.fileName.toLowerCase()))
         )
         
         if (fileToEdit) {
@@ -122,7 +134,7 @@ export function ChatInput() {
             // Add processing message with special format
             const processingMessageId = chatStore.addMessage(chat.id, {
               role: "model",
-              content: `FILE_EDIT_PROCESSING:${fileToEdit.name}:${editIntent.editPrompt}`,
+              content: `FILE_EDIT_PROCESSING:${fileToEdit.name}:${intent.editPrompt}`,
               turnId: userTurnId
             })
             
@@ -137,12 +149,12 @@ Rules:
 - Do not add introductory text or meta-commentary
 - The output should be the complete edited file content`
               
-              const editPrompt = `Please edit the following content according to this request: "${editIntent.editPrompt}"
+              const editPrompt = `Edit the following content: "${intent.editPrompt}"
 
 Original content:
 ${fileToEdit.content || ''}
 
-Provide only the edited content without any explanations.`
+Edited content (no explanations):`
 
               const response = await generateGeminiResponse({
                 apiKey: chatStore.apiKey,
@@ -164,11 +176,11 @@ Provide only the edited content without any explanations.`
               const editedContent = response.text.trim()
               
               // Store the edited content for diff view (don't apply yet)
-              filesStore.setEditedContent(fileToEdit.id, editedContent, editIntent.editPrompt)
+              filesStore.setEditedContent(fileToEdit.id, editedContent, intent.editPrompt)
               
               // Update the processing message with success
               chatStore.updateMessage(chat.id, processingMessageId, 
-                `FILE_EDIT_SUCCESS:${fileToEdit.name}:${editIntent.editPrompt}`
+                `FILE_EDIT_SUCCESS:${fileToEdit.name}:${intent.editPrompt}`
               )
               
               // Open the file in the editor to show the diff - only if not already open
@@ -179,7 +191,7 @@ Provide only the edited content without any explanations.`
             } catch (error) {
               console.error("Error editing file:", error)
               chatStore.updateMessage(chat.id, processingMessageId,
-                `FILE_EDIT_ERROR:${fileToEdit.name}:${editIntent.editPrompt}`
+                `FILE_EDIT_ERROR:${fileToEdit.name}:${intent.editPrompt}`
               )
             }
           }
@@ -203,7 +215,7 @@ Provide only the edited content without any explanations.`
             
             chatStore.addMessage(chat.id, {
               role: "model",
-              content: `I couldn't find a file named "${editIntent.fileName}" in your file tree. Please check the filename or create the file first. You can also select files from the file tree and use the Smart Edit feature in the file editor.`,
+              content: `I couldn't find a file named "${intent.fileName}" in your file tree. Please check the filename or create the file first. You can also select files from the file tree and use the Smart Edit feature in the file editor.`,
               turnId: userTurnId
             })
           }
@@ -215,35 +227,26 @@ Provide only the edited content without any explanations.`
       }
     }
 
-    // Detect file creation intent with enhanced NLP capabilities
-    const fileIntent = detectFileCreationIntent(messageToSend)
-    if (fileIntent) {
+    // Handle file creation intent
+    if (intent && intent.type === 'create') {
       try {
         // Create the file in the file tree (root level for now)
         const filesStore = useFilesStore.getState()
         
-        // Check if the file already exists to provide better feedback
-        const existingFiles = filesStore.files
-        const fileExists = Object.values(existingFiles).some(
-          node => node.type === 'file' && node.name.toLowerCase() === fileIntent.fileName.toLowerCase()
+        // Check if the file already exists
+        const existingFile = Object.values(filesStore.files).find(
+          node => node.type === 'file' && node.name.toLowerCase() === intent.fileName.toLowerCase()
         )
         
-        // Create the file with a unique name if needed
-        let fileName = fileIntent.fileName
+        let fileName = intent.fileName
         let fileId: string
         
-        if (fileExists) {
-          // Add timestamp to make unique
-          const nameParts = fileName.split('.')
-          const ext = nameParts.pop() || ''
-          const baseName = nameParts.join('.')
-          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19)
-          fileName = `${baseName}-${timestamp}.${ext}`
-          fileId = filesStore.createFile(null, fileName)
-          
-          // Let the user know we had to rename
-          console.info(`File '${fileIntent.fileName}' already exists, creating as '${fileName}' instead`)
+        if (existingFile) {
+          // File exists - just use the existing one and update its content
+          fileId = existingFile.id
+          console.info(`File '${intent.fileName}' already exists, updating content...`)
         } else {
+          // Create new file
           fileId = filesStore.createFile(null, fileName)
         }
         
@@ -274,7 +277,7 @@ Provide only the edited content without any explanations.`
         const { generateGeminiResponse } = await import("@/lib/gemini/api")
         
         // Enhance the content prompt based on file type and available context
-        let contentPrompt = fileIntent.contentPrompt
+        let contentPrompt = intent.contentPrompt
         
         // If no explicit content prompt or it's very short, make a better one
         if (!contentPrompt || contentPrompt.length < 10) {
@@ -356,15 +359,7 @@ The user wants the raw content only, as if they were writing the file themselves
         }, 100)
         
         // Update the temporary message with confirmation
-        // Create a more natural confirmation message based on the user's original phrasing
-        let confirmationMessage = `FILE_CREATION_SUCCESS:${fileName}`
-        
-        // If the file was renamed, add rename info
-        if (fileName !== fileIntent.fileName) {
-          confirmationMessage = `FILE_CREATION_SUCCESS:${fileName}:RENAMED:${fileIntent.fileName}`
-        }
-        
-        // Since we saved the processing message ID earlier, we can directly update it
+        const confirmationMessage = `FILE_CREATION_SUCCESS:${fileName}`
         chatStore.updateMessage(chat.id, processingMessageId, confirmationMessage)
         
         // Clean up
@@ -388,7 +383,7 @@ The user wants the raw content only, as if they were writing the file themselves
           
           chatStore.addMessage(chat.id, {
             role: "model",
-            content: `I encountered an error while trying to create the file "${fileIntent?.fileName || 'requested file'}". Please try again or use a different filename.`,
+            content: `I encountered an error while trying to create the file "${intent.fileName || 'requested file'}". Please try again or use a different filename.`,
             turnId: userTurnId
           })
           return

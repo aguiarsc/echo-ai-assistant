@@ -14,9 +14,11 @@ interface ChatStore {
   userAvatar: string;
   geminiAvatar: string;
   globalSystemInstruction: string;
+  autoGenerateTitles: boolean;
   setUserAvatar: (avatar: string) => void;
   setGeminiAvatar: (avatar: string) => void;
   setGlobalSystemInstruction: (instruction: string) => void;
+  setAutoGenerateTitles: (enabled: boolean) => void;
   
   // Chat management
   setActiveChat: (id: string | null) => void;
@@ -79,6 +81,7 @@ export const useChatStore = create<ChatStore>()(
       userAvatar: "/avatars/03.svg",
       geminiAvatar: "/avatars/20.svg",
       globalSystemInstruction: "",
+      autoGenerateTitles: true,
       
       // Chat pinning functionality
       
@@ -86,6 +89,7 @@ export const useChatStore = create<ChatStore>()(
       setUserAvatar: (avatar) => set({ userAvatar: avatar }),
       setGeminiAvatar: (avatar) => set({ geminiAvatar: avatar }),
       setGlobalSystemInstruction: (instruction) => set({ globalSystemInstruction: instruction }),
+      setAutoGenerateTitles: (enabled) => set({ autoGenerateTitles: enabled }),
       
       setActiveChat: (id) => set({ activeChat: id }),
       
@@ -98,6 +102,7 @@ export const useChatStore = create<ChatStore>()(
           model,
           createdAt: Date.now(),
           updatedAt: Date.now(),
+          titleGenerated: undefined, // Will auto-generate after 3+ messages
         };
         
         set(state => ({
@@ -131,16 +136,16 @@ export const useChatStore = create<ChatStore>()(
       updateChatTitle: (id, title) => set(state => ({
         chats: state.chats.map(chat => 
           chat.id === id
-            ? { ...chat, title, updatedAt: Date.now() }
+            ? { ...chat, title, titleGenerated: true, lastTitleMessageCount: chat.messages.length, updatedAt: Date.now() }
             : chat
         )
       })),
       
-      // Alias for updateChatTitle for consistency with UI components
+      // Alias for manual renaming - does not set titleGenerated flag
       renameChat: (id, title) => {
         set(state => ({
           chats: state.chats.map(chat => 
-            chat.id === id ? { ...chat, title } : chat
+            chat.id === id ? { ...chat, title, titleGenerated: false, lastTitleMessageCount: undefined } : chat
           )
         }));
       },

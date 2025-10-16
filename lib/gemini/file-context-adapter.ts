@@ -52,6 +52,8 @@ export function generateFileContextInstruction(files: FileContextContent[]): str
   let instruction = `
 === START OF FILE CONTEXT ===
 
+You have access to the following files from the user's project:
+
 `
   
   // Add each file with clear boundaries
@@ -74,11 +76,11 @@ export function generateFileContextInstruction(files: FileContextContent[]): str
   // Add balanced instructions that allow reasonable inference while maintaining accuracy
   instruction += `
 IMPORTANT INSTRUCTIONS:
-1. Base your responses primarily on the provided file content above.
-2. You may make reasonable inferences and draw logical conclusions based on the context.
-3. When asked for opinions, assessments, or prioritization not explicitly stated, use your judgment to provide helpful responses.
-4. When information is clearly not in the files, state that it isn't available in the context.
-5. Do NOT include file paths or source citations in your responses.
+1. Use the file content above as your primary reference.
+2. Apply your understanding and reasoning to provide helpful, complete responses.
+3. When asked for recommendations or assessments, use your judgment based on the context.
+4. If specific information isn't in the files and is needed, simply note that briefly.
+5. Respond naturally without mentioning file paths or quoting boundaries.
 6. Be helpful and direct in your responses without repeatedly mentioning limitations.
 `
   
@@ -87,43 +89,8 @@ IMPORTANT INSTRUCTIONS:
 
 /**
  * Create chat-compatible file attachments from file nodes
- * 
- * IMPORTANT: We don't actually use the FileMetadata directly for local files.
- * Instead, we're using a different approach by enhancing the system prompt with file content.
- * 
  * This function returns an empty array since we handle local files differently than uploaded files.
  */
 export function createChatAttachments(fileNodes: FileNode[]): FileMetadata[] {
-  // We don't create actual FileMetadata objects for local files since they won't work with Gemini API
-  // Local files are handled through system instructions and context enhancement
   return []
-}
-
-/**
- * Simple MIME type determination based on file extension
- */
-function determineMimeType(filename: string): string {
-  const extension = filename.split('.').pop()?.toLowerCase() || ''
-  
-  const mimeTypes: Record<string, string> = {
-    js: 'application/javascript',
-    jsx: 'application/javascript',
-    ts: 'application/typescript',
-    tsx: 'application/typescript',
-    html: 'text/html',
-    css: 'text/css',
-    json: 'application/json',
-    md: 'text/markdown',
-    txt: 'text/plain',
-    py: 'text/x-python',
-    rb: 'text/ruby',
-    java: 'text/x-java',
-    c: 'text/x-c',
-    cpp: 'text/x-c++',
-    go: 'text/x-go',
-    rs: 'text/x-rust',
-    php: 'application/x-php',
-  }
-  
-  return mimeTypes[extension] || 'text/plain'
 }

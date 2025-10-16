@@ -2,6 +2,9 @@ import { ChatMessage, GeminiModel } from "./index";
 import { generateGeminiResponse } from "./api";
 import { useChatStore } from "./store";
 
+// Track chats currently generating titles to prevent race conditions
+const generatingTitles = new Set<string>();
+
 /**
  * Generates a chat title based on the conversation content
  * @param messages Chat messages to analyze
@@ -37,7 +40,7 @@ export async function generateChatTitle(
         {
           id: "system-1",
           role: "system",
-          content: "You are a practical assistant specializing in creating concise, descriptive titles for conversations. Generate a straightforward title that summarizes the main topic or purpose of the conversation. Use clear, descriptive language rather than creative or poetic expressions. Keep titles under 50 characters, and aim for something informative that accurately reflects the content. Only respond with the title text, nothing else.",
+          content: "Generate a clear, descriptive title (under 50 characters) that captures the main topic of this conversation. Be direct and specific - avoid vague titles like 'Interesting Discussion' or 'Helpful Chat'. Just respond with the title, nothing else.",
           timestamp: Date.now()
         },
         {
@@ -48,11 +51,11 @@ export async function generateChatTitle(
         }
       ],
       params: {
-        temperature: 0.7, // Lower temperature for more focused, practical titles
+        temperature: 0.7,
         topP: 0.9,
         topK: 40,
-        maxOutputTokens: 25,
-        safetySettings: [] // Use default safety settings
+        maxOutputTokens: 15, // ~60 chars at ~4 chars/token
+        safetySettings: []
       }
     });
 
@@ -76,23 +79,38 @@ export async function generateChatTitle(
  * Hook to manage automatic title generation for chats
  */
 export function useAutomaticTitleGeneration() {
-  const { chats, updateChatTitle, apiKey } = useChatStore();
+  const { chats, updateChatTitle, apiKey, autoGenerateTitles } = useChatStore();
   
   /**
    * Automatically generate and update a chat title if conditions are met
    * @param chatId The chat ID to update
-   * @returns A promise resolving when title generation is complete
+   * @returns A promise resolving to true if title was updated, false otherwise
    */
-  const generateAndUpdateTitle = async (chatId: string): Promise<void> => {
-    const chat = chats.find(c => c.id === chatId);
-    if (!chat) return;
+  const generateAndUpdateTitle = async (chatId: string): Promise<boolean> => {
+    // Check user preference first
+    if (!autoGenerateTitles) return false;
     
-    // Only generate a title if it's still the default or if specifically requested
-    const shouldGenerateTitle = 
-      chat.title === "New Chat" && 
-      chat.messages.length >= 3;
+    // Prevent race conditions - skip if already generating for this chat
+    if (generatingTitles.has(chatId)) return false;
+    
+    const chat = chats.find(c => c.id === chatId);
+    if (!chat) return false;
+    
+    // Don't generate if title was manually set
+    if (chat.titleGenerated === false) return false;
+    
+    // Generate if:
+    // 1. Never generated before (titleGenerated is undefined) and we have 3+ messages
+    // 2. Auto-generated before, and we've added 10+ messages since last generation
+    const neverGenerated = chat.titleGenerated === undefined && chat.messages.length >= 3;
+    const needsRegeneration = chat.titleGenerated === true && 
+      chat.messages.length >= (chat.lastTitleMessageCount || 0) + 10;
+    
+    const shouldGenerateTitle = neverGenerated || needsRegeneration;
       
     if (shouldGenerateTitle) {
+      generatingTitles.add(chatId);
+      
       try {
         const newTitle = await generateChatTitle(
           chat.messages,
@@ -103,11 +121,16 @@ export function useAutomaticTitleGeneration() {
         // Update the title if we got something meaningful
         if (newTitle && newTitle !== "New Chat") {
           updateChatTitle(chatId, newTitle);
+          return true;
         }
       } catch (error) {
         console.error("Failed to update chat title:", error);
+      } finally {
+        generatingTitles.delete(chatId);
       }
     }
+    
+    return false;
   };
   
   return { generateAndUpdateTitle };

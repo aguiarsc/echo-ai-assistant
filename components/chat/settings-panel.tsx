@@ -37,7 +37,9 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
     geminiAvatar,
     setGeminiAvatar,
     globalSystemInstruction,
-    setGlobalSystemInstruction
+    setGlobalSystemInstruction,
+    autoGenerateTitles,
+    setAutoGenerateTitles
   } = useChatStore()
 
   const { saveApiKey, clearApiKey, isLoading, hasStoredKey } = useSecureApiKey()
@@ -162,6 +164,22 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                 Your API key is securely stored in an HTTP-only cookie.
               </p>
+            </div>
+
+            <div className="space-y-2 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="auto-generate-titles">Auto-Generate Chat Titles</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically create descriptive titles for chats after 3+ messages
+                  </p>
+                </div>
+                <Switch
+                  id="auto-generate-titles"
+                  checked={autoGenerateTitles}
+                  onCheckedChange={(checked: boolean) => setAutoGenerateTitles(checked)}
+                />
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
