@@ -47,7 +47,7 @@ export interface GenerationParams {
   thinkingBudget?: number;
   includeSummaries?: boolean;
   safetySettings?: SafetySetting[];
-  workMode?: 'standard' | 'business' | 'technical' | 'concise'; // Track the current work style mode
+  workMode?: 'standard' | 'concise'; // Track the current work style mode
   streamingSpeed?: number; // Delay in milliseconds between characters (5-15ms)
   groundingEnabled?: boolean; // Enable Google Search grounding for real-time information
 }
@@ -60,7 +60,7 @@ export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
   thinkingEnabled: true,
   thinkingBudget: -1,
   includeSummaries: true,
-  workMode: 'business',
+  workMode: 'standard',
   streamingSpeed: 5,
   groundingEnabled: false,
   safetySettings: [

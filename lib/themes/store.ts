@@ -67,19 +67,16 @@ export const useThemeStore = create<ThemeStore>()(
 
         // Apply font variables (common to both light and dark)
         const fontVars = {
-          '--font-sans': theme.id === 'altia' ? 'Inter, sans-serif' : 
-                        theme.id === 'ghibli' ? 'Nunito, sans-serif' :
-                        theme.id === 'material' ? 'Roboto, sans-serif' :
+          '--font-sans': theme.id === 'default' ? 'Nunito, sans-serif' :
+                        theme.id === 'claude' ? 'Roboto, sans-serif' :
                         'Geist, ui-sans-serif, system-ui, sans-serif',
-          '--font-serif': theme.id === 'altia' ? 'Source Serif 4, serif' :
-                         theme.id === 'ghibli' ? 'PT Serif, serif' :
-                         theme.id === 'material' ? 'Merriweather, serif' :
+          '--font-serif': theme.id === 'default' ? 'PT Serif, serif' :
+                         theme.id === 'claude' ? 'Merriweather, serif' :
                          'Geist, ui-serif, Georgia, serif',
-          '--font-mono': theme.id === 'ghibli' ? 'JetBrains Mono, monospace' :
+          '--font-mono': theme.id === 'default' ? 'JetBrains Mono, monospace' :
                         'Geist Mono, ui-monospace, monospace',
-          '--radius': theme.id === 'ghibli' ? '0.625rem' :
-                     theme.id === 'material' ? '1rem' :
-                     theme.id === 'altia' ? '0.375rem' :
+          '--radius': theme.id === 'default' ? '0.625rem' :
+                     theme.id === 'claude' ? '1rem' :
                      '0.5rem'
         };
 

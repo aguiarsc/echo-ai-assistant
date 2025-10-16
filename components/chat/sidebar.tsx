@@ -7,20 +7,19 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { GEMINI_MODELS } from "@/lib/gemini"
-import { Edit, MessageCircle, Plus, Settings, Trash, Folder, Pin, PinOff, Calendar as CalendarIcon } from "lucide-react"
+import { Edit, MessageCircle, Plus, Settings, Trash, Folder, Pin, PinOff } from "lucide-react"
 import { useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { SettingsPanel } from "@/components/chat/settings-panel"
 import Image from "next/image"
 import { FilesTab } from "@/components/files/files-tab"
-import { CalendarTab } from "@/components/calendar/calendar-tab"
 
 export function Sidebar() {
   const [open, setOpen] = useState(true)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [renameId, setRenameId] = useState<string | null>(null)
   const [newChatName, setNewChatName] = useState("")
-  const [activeTab, setActiveTab] = useState<"chats" | "files" | "calendar">("chats")
+  const [activeTab, setActiveTab] = useState<"chats" | "files">("chats")
   
   const { 
     chats, 
@@ -106,19 +105,6 @@ export function Sidebar() {
           >
             <Folder className={cn("h-4 w-4", !open && "mx-auto")} />
             {open && <span className="ml-2 text-sm">Files</span>}
-          </button>
-
-          <button 
-            className={cn(
-              "flex items-center justify-center flex-1 py-2 px-3 border-b-2 transition-colors",
-              activeTab === "calendar" 
-                ? "border-primary text-primary" 
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
-            onClick={() => setActiveTab("calendar")}
-          >
-            <CalendarIcon className={cn("h-4 w-4", !open && "mx-auto")} />
-            {open && <span className="ml-2 text-sm">Calendar</span>}
           </button>
 
         </div>
@@ -277,13 +263,6 @@ export function Sidebar() {
         {activeTab === "files" && (
           <div className="flex-1 overflow-hidden">
             <FilesTab open={open} />
-          </div>
-        )}
-        
-        {/* Calendar Tab Content */}
-        {activeTab === "calendar" && (
-          <div className="flex-1 overflow-hidden">
-            <CalendarTab open={open} />
           </div>
         )}
         

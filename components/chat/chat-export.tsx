@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { Download, Upload, FileDown, Calendar, Settings, Brain, Clock, Hash } from "lucide-react"
+import { Download, Upload, FileDown, Settings, Brain, Clock, Hash } from "lucide-react"
 import { Chat } from "@/lib/gemini/index"
 import { useChatStore } from "@/lib/gemini/store"
 import {
@@ -79,7 +79,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
         pdfOptions: {
           orientation: pdfOrientation,
           headerText: chat ? `Chat: ${chat.title}` : 'Chat Export',
-          footerText: 'Exported from altIA Business Assistant'
+          footerText: 'Exported from Echo'
         }
       }
       
@@ -371,10 +371,6 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                   checked={useDateRange}
                   onCheckedChange={(checked) => setUseDateRange(checked === true)}
                 />
-                <Label htmlFor="useDateRange" className="text-sm flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Filter by date range
-                </Label>
               </div>
               
               {useDateRange && (
@@ -422,7 +418,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                     disabled={importing}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Select a JSON file exported from altIA Business Assistant
+                    Select a JSON file exported from Echo
                   </p>
                 </div>
               </div>

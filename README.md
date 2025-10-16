@@ -1,32 +1,32 @@
-# 🏢 altIA Business Assistant
+# 🎭 ECHO Novel Assistant
 
-A professional AI-powered business companion with advanced document management and intelligent editing capabilities, designed specifically for project managers, HR professionals, legal teams, and business analysts.
+A professional AI-powered writing companion with advanced file management and intelligent editing capabilities, designed specifically for novelists and creative writers.
 
 ## ✨ Overview
 
-altIA transforms the business workflow experience by combining the power of Google's Gemini AI with a sophisticated document management system. Unlike traditional AI chatbots, altIA provides:
+ECHO transforms the writing experience by combining the power of Google's Gemini AI with a sophisticated file management system. Unlike traditional AI chatbots, ECHO provides:
 
-- **🧠 AI-Powered Document Editing**: Smart content editing with visual diff review
-- **📁 Professional Document System**: Complete in-browser document management with drag & drop
-- **💭 Advanced AI Analysis**: Real-time AI reasoning display with accurate timing
-- **🔄 Seamless Context Integration**: Use your business documents as context for AI conversations
+- **🧠 AI-Powered File Editing**: Smart content editing with visual diff review
+- **📁 Professional File System**: Complete in-browser file management with drag & drop
+- **💭 Advanced AI Thinking**: Real-time AI reasoning display with accurate timing
+- **🔄 Seamless Context Integration**: Use your story files as context for AI conversations
 - **⚡ Fluid Chat Experience**: Type while AI responds, no waiting required
 
-Built with Next.js 15, React 19, TypeScript, and TailwindCSS 4, altIA delivers an IDE-like experience optimized for business productivity workflows.
+Built with Next.js 15, React 19, TypeScript, and TailwindCSS 4, ECHO delivers an IDE-like experience optimized for creative writing workflows.
 
 ## 🚀 Key Features
 
-### 🎯 AI-Powered Business Tools
-- **✏️ Smart Document Editing**: Natural language document editing with visual diff review
-- **🧠 AI Analysis Mode**: See real-time AI reasoning with accurate duration tracking
-- **📝 Intelligent Content Generation**: AI creates business documents based on natural language requests
-- **🔍 Context-Aware Responses**: AI understands your entire business project structure
+### 🎯 AI-Powered Writing Tools
+- **✏️ Smart File Editing**: Natural language file editing with visual diff review
+- **🧠 AI Thinking Mode**: See real-time AI reasoning with accurate duration tracking
+- **📝 Intelligent Content Generation**: AI creates files based on natural language requests
+- **🔍 Context-Aware Responses**: AI understands your entire project structure
 
-### 📁 Professional Document Management
-- **🗂️ Hierarchical Organization**: Documents and folders with drag & drop support
-- **⚡ Real-time Editing**: Instant document updates with auto-save
-- **🔄 Context Selection**: Choose documents as context for AI conversations
-- **📋 Document Creation FAQ**: Built-in help for AI document creation commands
+### 📁 Professional File Management
+- **🗂️ Hierarchical Organization**: Files and folders with drag & drop support
+- **⚡ Real-time Editing**: Instant file updates with auto-save
+- **🔄 Context Selection**: Choose files as context for AI conversations
+- **📋 File Creation FAQ**: Built-in help for AI file creation commands
 
 ### 💬 Advanced Chat Experience
 - **⌨️ Type While AI Responds**: No waiting - prepare your next message during AI generation
@@ -37,14 +37,14 @@ Built with Next.js 15, React 19, TypeScript, and TailwindCSS 4, altIA delivers a
 ### 🎨 Professional Interface
 - **🌓 Theme Support**: Beautiful dark and light modes
 - **📱 Responsive Design**: Optimized for mobile, tablet, and desktop
-- **🎯 IDE-like Experience**: Professional tools for business productivity
-- **💾 Persistent Storage**: All chats and documents saved between sessions
+- **🎯 IDE-like Experience**: Professional tools for serious writers
+- **💾 Persistent Storage**: All chats and files saved between sessions
 
 ## 🆕 What's New
 
 ### Latest Improvements (January 2025)
 - **✨ Enhanced AI Thinking**: Professional AI reasoning display with real-time duration tracking
-- **🔧 Smart Document Editing**: Visual diff interface for AI-powered content editing
+- **🔧 Smart File Editing**: Visual diff interface for AI-powered content editing
 - **⚡ Improved Chat UX**: Type while AI responds, no more waiting for responses
 - **🔄 Sequential AI Flow**: Thinking process displays first, then response streams
 - **🐛 Bug Fixes**: Resolved message ordering and auto-submit issues
@@ -54,43 +54,26 @@ Built with Next.js 15, React 19, TypeScript, and TailwindCSS 4, altIA delivers a
 
 Comprehensive documentation covering architecture, features, and implementation details:
 
-### 📄 Core Documentation
-- [Project Overview](/docs/01-project-overview.md) - High-level project architecture and goals
-- [File Management System](/docs/02-file-management.md) - Complete file system capabilities
-- [AI Integration](/docs/03-ai-integration.md) - Gemini AI integration and features
-- [User Interface Components](/docs/04-user-interface.md) - UI components and design system
-- [Technical Architecture](/docs/05-technical-architecture.md) - System architecture and patterns
-
-### 🔧 Advanced Topics
-- [State Management](/docs/06-state-management.md) - Zustand stores and data persistence
-- [API Integration](/docs/07-api-integration.md) - External API integrations and security
-- [Chat Features](/docs/08-chat-features.md) - Advanced chat functionality and streaming
-- [Theming System](/docs/09-theming-system.md) - Theme implementation and customization
-- [AI File Creation](/docs/10-ai-file-creation.md) - AI-powered file generation system
-
-### 🔍 Reference
-- [Comprehensive Codebase Analysis](/docs/00-COMPREHENSIVE-CODEBASE-ANALYSIS.md) - Complete technical overview
-
 ## 🎨 Usage Examples
 
-### AI Document Editing
+### AI File Editing
 ```
-edit project-plan.md to update the timeline for Q2
-edit employee-handbook.md adding remote work policies
-modify contract-template.md to include new compliance requirements
-```
-
-### AI Document Creation
-```
-create meeting-agenda.md for the quarterly review
-generate policy-document.md for data privacy compliance
-make project-proposal.md for the new client initiative
+edit story.md to improve the dialogue in chapter 3
+edit character-sheet.md adding more backstory details
+modify outline.md to include a new subplot
 ```
 
-### Context-Aware Business Conversations
-1. Select your project documents in the document tree
-2. Ask questions about your projects, policies, or business processes
-3. AI responds with full knowledge of your business context
+### AI File Creation
+```
+create character-profile.md for the main protagonist
+generate outline.md for a fantasy adventure story
+make chapter1.md with an engaging opening scene
+```
+
+### Context-Aware Conversations
+1. Select your story files in the file tree
+2. Ask questions about your characters, plot, or world
+3. AI responds with full knowledge of your project context
 
 ## 🛠️ Tech Stack
 
@@ -100,7 +83,3 @@ make project-proposal.md for the new client initiative
 - **State**: Zustand with IndexedDB persistence
 - **Database**: Dexie (IndexedDB wrapper)
 - **Security**: HTTP-only cookies for API keys
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -196,8 +196,8 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 Work Mode
               </Label>
               <Select
-                value={generationParams.workMode || 'business'}
-                onValueChange={(value: 'standard' | 'business' | 'technical' | 'concise') => {
+                value={generationParams.workMode || 'standard'}
+                onValueChange={(value: 'standard' | 'concise') => {
                   setGenerationParams({ workMode: value });
                 }}
               >
@@ -205,8 +205,6 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   <SelectValue placeholder="Select work mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="business">Business - Professional and structured responses</SelectItem>
-                  <SelectItem value="technical">Technical - Detailed technical explanations</SelectItem>
                   <SelectItem value="standard">Standard - Balanced general responses</SelectItem>
                   <SelectItem value="concise">Concise - Brief and to-the-point answers</SelectItem>
                 </SelectContent>
@@ -277,7 +275,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               </div>
             </div>
             <div className="space-y-4">
-              <Label>altIA Avatar</Label>
+              <Label>Echo Avatar</Label>
               <div className="grid grid-cols-6 gap-4">
                 {avatars.map(avatar => (
                   <ThemeAvatar 
@@ -309,7 +307,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               <Label htmlFor="system-instruction">System Instruction</Label>
               <Textarea
                 id="system-instruction"
-                placeholder="e.g., You are a professional business assistant that specializes in project management and document analysis."
+                placeholder="e.g., You are a professional assistant that specializes in project management and document analysis."
                 value={globalSystemInstruction}
                 onChange={(e) => setGlobalSystemInstruction(e.target.value)}
                 className="min-h-[120px] text-sm"

@@ -24,10 +24,8 @@ import { useFileContextStore } from "@/lib/files/context-store"
 import { createChatAttachments, convertFileToContext, generateFileContextInstruction } from "@/lib/gemini/file-context-adapter"
 import { detectFileCreationIntent } from "@/lib/ai/file-intent"
 import { detectFileEditIntent } from "@/lib/ai/edit-intent"
-import { detectCalendarIntent, convertToCalendarEvent } from "@/lib/ai/calendar-intent"
 import { generateGeminiResponse } from "@/lib/gemini/api"
 import { useFilesStore } from "@/lib/files/store"
-import { useCalendarStore } from "@/lib/calendar/store"
 
 // Helper function to clean AI-generated content from unwanted introductions
 function cleanFileContent(content: string): string {
@@ -295,7 +293,7 @@ Provide only the edited content without any explanations.`
           const fileExt = fileName.split('.').pop()?.toLowerCase() || ''
           
           if (fileExt === 'md') {
-            contentPrompt = `Create professional markdown content for a business document named "${fileName}". Extract any relevant topic information from the filename and expand on it with appropriate business structure and formatting.`
+            contentPrompt = `Create professional markdown content for a document named "${fileName}". Extract any relevant topic information from the filename and expand on it with appropriate structure and formatting.`
           } else if (['txt', 'text'].includes(fileExt)) {
             contentPrompt = `Create text content for "${fileName}". If the filename suggests a specific topic, please focus on that.`
           } else {
@@ -407,85 +405,6 @@ The user wants the raw content only, as if they were writing the file themselves
           })
           return
         }
-      }
-    }
-
-    // Detect calendar intent and handle calendar event creation
-    const chatStore = useChatStore.getState()
-    if (chatStore.apiKey) {
-      try {
-        // Get selected files for context
-        const selectedFiles = getSelectedFiles()
-        let fileContext = ''
-        
-        if (selectedFiles.length > 0) {
-          const fileContexts = selectedFiles
-            .filter(file => file.type === "file")
-            .map(file => `File: ${file.name}\nContent: ${file.content || ''}\n`)
-          fileContext = fileContexts.join('\n---\n')
-        }
-        
-        const calendarIntent = await detectCalendarIntent(messageToSend, chatStore.apiKey, fileContext)
-        
-        if (calendarIntent.hasCalendarIntent && calendarIntent.events.length > 0) {
-          const calendarStore = useCalendarStore.getState()
-          const chat = chatStore.chats.find(c => c.id === chatStore.activeChat)
-          
-          if (chat) {
-            const userTurnId = crypto.randomUUID()
-            chatStore.addMessage(chat.id, {
-              role: "user",
-              content: messageToSend,
-              turnId: userTurnId
-            })
-            
-            try {
-              const createdEvents = []
-              
-              // Create all detected events
-              for (const eventData of calendarIntent.events) {
-                const calendarEvent = convertToCalendarEvent(eventData)
-                const eventId = await calendarStore.addEvent(calendarEvent)
-                createdEvents.push({ id: eventId, title: eventData.title })
-              }
-              
-              // Create success message with special format
-              const eventCount = createdEvents.length
-              const eventTitles = createdEvents.map(e => e.title).join('|')
-              const confidence = calendarIntent.confidence
-              
-              let successMessage = ''
-              if (eventCount === 1) {
-                successMessage = `CALENDAR_EVENT_SUCCESS:${eventTitles}:${confidence}`
-              } else {
-                successMessage = `CALENDAR_EVENTS_SUCCESS:${eventCount}:${eventTitles}:${confidence}`
-              }
-              
-              chatStore.addMessage(chat.id, {
-                role: "model",
-                content: successMessage,
-                turnId: userTurnId
-              })
-              
-              // Clear form and return
-              setAttachedFiles([])
-              setShowFileUpload(false)
-              return
-              
-            } catch (error) {
-              console.error('Error creating calendar events:', error)
-              chatStore.addMessage(chat.id, {
-                role: "model",
-                content: `CALENDAR_EVENT_ERROR:${calendarIntent.events.length > 1 ? 'multiple' : 'single'}`,
-                turnId: userTurnId
-              })
-              return
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Calendar intent detection failed:', error)
-        // Continue with normal chat flow if calendar intent detection fails
       }
     }
 

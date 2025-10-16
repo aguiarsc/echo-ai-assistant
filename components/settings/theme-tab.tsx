@@ -8,14 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useThemeStore } from '@/lib/themes/store';
 import { themes } from '@/lib/themes/definitions';
-import { Moon, Sun, Palette, User, Sparkles, TreePine, Layers } from 'lucide-react';
+import { Moon, Sun, User, Layers } from 'lucide-react';
 
 const themeIcons = {
   default: Layers,
-  claude: User,
-  altia: Sparkles,
-  ghibli: TreePine,
-  material: Palette
+  claude: User
 };
 
 export function ThemeTab() {
@@ -71,7 +68,7 @@ export function ThemeTab() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Palette className="w-4 h-4" />
+            <Layers className="w-4 h-4" />
             Theme Selection
           </CardTitle>
           <CardDescription>
@@ -81,7 +78,7 @@ export function ThemeTab() {
         <CardContent>
           <div className="grid gap-4">
             {themes.map((theme) => {
-              const IconComponent = themeIcons[theme.id as keyof typeof themeIcons] || Palette;
+              const IconComponent = themeIcons[theme.id as keyof typeof themeIcons] || Layers;
               const isSelected = currentTheme.id === theme.id;
               
               return (
