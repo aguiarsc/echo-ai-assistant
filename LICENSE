@@ -1,49 +1,9 @@
-AI NOVEL ASSISTANT
-PROPRIETARY LICENSE AGREEMENT
-(All Rights Reserved)
+MIT License
 
-Copyright © 2025 Samuel Aguiar Cabaleiro
+Copyright (c) 2025 Samuel Aguiar Cabaleiro
 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-PROPRIETARY CONCEPT LICENSE
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-1. PROTECTED INTELLECTUAL PROPERTY
-
-   This license protects the unique concept, design, and implementation of combining an AI chatbox with 
-   an integrated file tree system (the "Protected Concept") created by Samuel Aguiar Cabaleiro (the "Owner"). 
-   Specifically, the natural language processing for AI-driven file creation and management functionality 
-   represents proprietary innovation of the Owner.
-
-   The underlying technologies used (including but not limited to Next.js, React, TypeScript, TailwindCSS, 
-   and Google's Gemini SDK) remain the property of their respective owners and are subject to their own 
-   licenses.
-
-2. RESTRICTIONS
-
-   Without express written permission from Samuel Aguiar Cabaleiro, no person or entity may:
-
-   a. Copy, reproduce, or implement the Protected Concept
-   b. Create derivative works based on the Protected Concept
-   c. Distribute or commercialize applications implementing the Protected Concept
-   d. Use the source code containing implementations of the Protected Concept
-
-3. PERMISSION
-
-   All requests for permission to use the Protected Concept must be directed to Samuel Aguiar Cabaleiro, 
-   who retains sole discretion to grant or deny such requests.
-
-4. LEGAL PROTECTION
-
-   The Protected Concept is safeguarded by applicable intellectual property laws. The Owner reserves 
-   all rights to enforce these protections to the fullest extent permitted by law.
-
-5. DISCLAIMER
-
-   THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. THE OWNER SHALL NOT BE LIABLE 
-   FOR ANY CLAIMS OR DAMAGES ARISING FROM THE USE OF THE SOFTWARE.
-
-
-ALL RIGHTS RESERVED.
-
-Samuel Aguiar Cabaleiro
-Date: July 6, 2025
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
