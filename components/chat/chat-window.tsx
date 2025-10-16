@@ -1,99 +1,28 @@
 "use client"
 
-import { useRef, useEffect, useState } from "react"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useEffect } from "react"
 import { Message } from "@/components/chat/message"
 import { ChatInput } from "@/components/chat/chat-input"
 import { useChatStore } from "@/lib/gemini/store"
 import { useChat } from "@/hooks/use-chat"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bot, Plus, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { GEMINI_MODELS } from "@/lib/gemini"
-
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ui/shadcn-io/ai/conversation"
 
 export function ChatWindow() {
   const { 
     chats, 
-    activeChat, 
-    generationParams,
-    setGenerationParams,
-    createChat,
-    isStreaming,
-    setActiveChat
+    activeChat
   } = useChatStore()
   
   // Get access to the getRelatedThinking function from useChat
   const { getRelatedThinking } = useChat()
-  
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentChat = chats.find((chat) => chat.id === activeChat);
-  
-  // Track if user has manually scrolled up during streaming
-  const [userHasScrolled, setUserHasScrolled] = useState(false);
-  
-  // Track the scroll position and scroll height to determine user scroll actions
-  const [scrollData, setScrollData] = useState({
-    scrollTop: 0,
-    scrollHeight: 0,
-    clientHeight: 0
-  });
-  
+
   // Update last active time when interacting with chat
   useEffect(() => {
     if (currentChat) {
       localStorage.setItem('lastActiveChatTime', Date.now().toString());
     }
   }, [currentChat?.messages]);
-
-  // Handle user scroll events
-  const handleScroll = () => {
-    if (!scrollAreaRef.current) return;
-    
-    const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
-    const isAtBottom = scrollHeight - scrollTop - clientHeight < 50; // Allow small margin
-    
-    // Save current scroll data
-    setScrollData({ scrollTop, scrollHeight, clientHeight });
-    
-    // If user scrolls away from bottom during streaming, note it
-    if (isStreaming && !isAtBottom) {
-      setUserHasScrolled(true);
-    }
-    
-    // If user scrolls back to bottom, reset the flag
-    if (isAtBottom) {
-      setUserHasScrolled(false);
-    }
-  };
-  
-  // Set up scroll event listener
-  useEffect(() => {
-    const scrollElement = scrollAreaRef.current;
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', handleScroll);
-      return () => scrollElement.removeEventListener('scroll', handleScroll);
-    }
-  }, [isStreaming]);
-  
-  // Auto-scroll to bottom on new messages or streaming (unless user has scrolled)
-  useEffect(() => {
-    // Don't auto-scroll if user is reading earlier content
-    if (scrollAreaRef.current && !userHasScrolled) {
-      if (isStreaming) {
-        // For streaming, a direct scroll is better to keep up with content
-        scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-      } else {
-        // For new messages, smooth scroll into view
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        // Reset user scroll flag when a new message is sent
-        setUserHasScrolled(false);
-      }
-    }
-  }, [currentChat?.messages, isStreaming, userHasScrolled]);
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -116,11 +45,8 @@ export function ChatWindow() {
             </div>
           ) : (
             <>
-              <div 
-                ref={scrollAreaRef} 
-                className="flex-1 overflow-y-auto"
-              >
-                <div className="px-2 sm:px-4 pt-4 sm:pt-6 pb-2 sm:pb-4">
+              <Conversation className="flex-1">
+                <ConversationContent className="px-2 sm:px-4 pt-4 sm:pt-6 pb-2 sm:pb-4">
                   <div className="flex flex-col gap-4 sm:gap-6">
                     {currentChat.messages
                       .filter((msg) => msg.role !== "thinking")
@@ -139,10 +65,10 @@ export function ChatWindow() {
                           />
                         );
                       })}
-                    <div ref={messagesEndRef} className="h-1" />
                   </div>
-                </div>
-              </div>
+                </ConversationContent>
+                <ConversationScrollButton className="shadow-md" />
+              </Conversation>
               <div className="p-4 bg-background/80 backdrop-blur-sm shrink-0">
                 <div className="max-w-3xl mx-auto">
                   <ChatInput />

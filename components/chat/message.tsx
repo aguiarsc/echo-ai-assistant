@@ -3,11 +3,12 @@
 import { cn } from "@/lib/utils"
 import { ChatMessage } from "@/lib/gemini"
 import { ThemeAvatar } from "@/components/ui/theme-avatar"
-import ReactMarkdown from "react-markdown"
-import { CodeBlock } from "@/components/chat/code-block"
-import { ScrollArea } from "../ui/scroll-area"
-import { Check, Copy, ChevronDown, ChevronUp, Paperclip, X } from "lucide-react"
-import { AIReasoning, AIReasoningTrigger, AIReasoningContent } from "@/components/ui/ai-reasoning"
+import { Response } from "@/components/ui/shadcn-io/ai/response"
+import { Reasoning, ReasoningTrigger, ReasoningContent } from "@/components/ui/shadcn-io/ai/reasoning"
+import { Actions, Action } from "@/components/ui/shadcn-io/ai/actions"
+import { Sources, SourcesTrigger, SourcesContent, Source } from "@/components/ui/shadcn-io/ai/source"
+import { Task, TaskTrigger, TaskContent, TaskItem, TaskItemFile } from "@/components/ui/shadcn-io/ai/task"
+import { Check, Copy, Paperclip, X, FileEdit, FilePlus, Search } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { useChatStore } from "@/lib/gemini/store"
@@ -325,47 +326,46 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
             touchAction: 'manipulation',
           }}>
             {isThinking ? (
-              <AIReasoning 
+              <Reasoning 
                 isStreaming={isThinkingStreaming}
                 defaultOpen={true}
                 duration={actualThinkingDuration}
                 className="mb-4"
               >
-                <AIReasoningTrigger />
-                <AIReasoningContent>
+                <ReasoningTrigger />
+                <ReasoningContent>
                   {renderMessageContent() || "Thinking..."}
-                </AIReasoningContent>
-              </AIReasoning>
+                </ReasoningContent>
+              </Reasoning>
             ) : (
               <div>
-                {/* Show related thinking with new AI Reasoning component */}
+                {/* Show related thinking with shadcn Reasoning component */}
                 {!isUser && relatedThinking && relatedThinking.content && (
-                  <AIReasoning 
+                  <Reasoning 
                     defaultOpen={showThoughts}
                     onOpenChange={setShowThoughts}
                     isStreaming={false}
                     duration={actualThinkingDuration}
                     className="mb-4"
                   >
-                    <AIReasoningTrigger />
-                    <AIReasoningContent>
+                    <ReasoningTrigger />
+                    <ReasoningContent>
                       {relatedThinking.content}
-                    </AIReasoningContent>
-                  </AIReasoning>
+                    </ReasoningContent>
+                  </Reasoning>
                 )}
                 
                 <div className="relative w-full">
                   {!isUser && (
-                    <div className="absolute right-0 top-0 z-50">
-                      <button 
+                    <Actions className="absolute right-0 top-0 z-50">
+                      <Action 
+                        tooltip="Copy message"
                         onClick={copyToClipboard}
-                        className="bg-secondary/70 text-primary hover:bg-secondary p-1.5 rounded-md opacity-80 group-hover:opacity-100 transition-all hover:shadow-sm border border-primary/10"
-                        aria-label="Copy message"
-                        title="Copy message"
+                        className="opacity-80 group-hover:opacity-100"
                       >
                         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </button>
-                    </div>
+                      </Action>
+                    </Actions>
                   )}
                   <div className="pr-8"> {/* Add padding for copy button */}
                     {isUser && message.files && message.files.length > 0 && (
@@ -421,241 +421,122 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
                     
                     {/* File Creation UI */}
                     {isFileCreationMessage && fileCreationData && (
-                      <div className={cn(
-                        "mb-4 rounded-lg p-4 border transition-all duration-300",
-                        fileCreationData.type === 'processing' 
-                          ? "bg-gradient-to-r from-blue-50/50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/30 border-blue-200/30 dark:border-blue-800/30"
-                          : "bg-gradient-to-r from-green-50/50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/30 border-green-200/30 dark:border-green-800/30"
-                      )}>
-                        <div className="flex items-start gap-3">
-                          <div className={cn(
-                            "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center",
-                            fileCreationData.type === 'processing'
-                              ? "bg-blue-500/20 dark:bg-blue-400/20"
-                              : "bg-green-500/20 dark:bg-green-400/20"
-                          )}>
-                            {fileCreationData.type === 'processing' ? (
-                              <div className={cn(
-                                "w-3 h-3 rounded-full animate-pulse",
-                                "bg-blue-500 dark:bg-blue-400"
-                              )} />
-                            ) : (
-                              <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
-                            )}
+                      <Task defaultOpen={true} className="mb-4">
+                        <TaskTrigger title={fileCreationData.type === 'processing' ? 'Creating file...' : 'File created'}>
+                          <div className="flex cursor-pointer items-center gap-2 text-muted-foreground hover:text-foreground">
+                            <FilePlus className="size-4" />
+                            <p className="text-sm">
+                              {fileCreationData.type === 'processing' ? 'Creating file...' : 'File created successfully'}
+                            </p>
                           </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            {fileCreationData.type === 'processing' ? (
-                              <div>
-                                <div className="font-medium text-blue-700 dark:text-blue-300 mb-1">
-                                  Creating file: <code className="text-sm bg-blue-100/50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">{fileCreationData.fileName}</code>
-                                </div>
-                                <div className="text-sm text-blue-600/80 dark:text-blue-400/80 italic">
-                                  Generating content...
-                                </div>
-                              </div>
-                            ) : (
-                              <div>
-                                <div className="font-medium text-green-700 dark:text-green-300 mb-2">
-                                  File created successfully!
-                                </div>
-                                <div className="space-y-1 text-sm text-green-600/90 dark:text-green-400/90">
-                                  {fileCreationData.isRenamed && fileCreationData.originalName && (
-                                    <div className="flex items-center gap-2">
-                                      <span>🔄</span>
-                                      <span><strong>Renamed from:</strong> <code className="bg-green-100/50 dark:bg-green-900/30 px-1.5 py-0.5 rounded">{fileCreationData.originalName}</code></span>
-                                    </div>
-                                  )}
-                                  <div className="mt-2 pt-2 border-t border-green-200/30 dark:border-green-800/30">
-                                    <span className="text-green-700 dark:text-green-300">The file is ready for you to review and edit.</span>
+                        </TaskTrigger>
+                        <TaskContent>
+                          <TaskItem>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">File:</span>
+                              <TaskItemFile>{fileCreationData.fileName}</TaskItemFile>
+                            </div>
+                          </TaskItem>
+                          {fileCreationData.type === 'processing' ? (
+                            <TaskItem>
+                              <span className="italic">Generating content...</span>
+                            </TaskItem>
+                          ) : (
+                            <>
+                              {fileCreationData.isRenamed && fileCreationData.originalName && (
+                                <TaskItem>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground">Renamed from:</span>
+                                    <TaskItemFile>{fileCreationData.originalName}</TaskItemFile>
                                   </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                                </TaskItem>
+                              )}
+                              <TaskItem>
+                                <span className="text-foreground">✓ The file is ready for you to review and edit.</span>
+                              </TaskItem>
+                            </>
+                          )}
+                        </TaskContent>
+                      </Task>
                     )}
                     
                     {/* File Edit UI */}
                     {isFileEditMessage && fileEditData && (
-                      <div className={cn(
-                        "mb-4 rounded-lg p-4 border transition-all duration-300",
-                        fileEditData.type === 'processing' 
-                          ? "bg-gradient-to-r from-purple-50/50 to-purple-100/50 dark:from-purple-950/20 dark:to-purple-900/30 border-purple-200/30 dark:border-purple-800/30"
-                          : fileEditData.type === 'success'
-                          ? "bg-gradient-to-r from-green-50/50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/30 border-green-200/30 dark:border-green-800/30"
-                          : "bg-gradient-to-r from-red-50/50 to-red-100/50 dark:from-red-950/20 dark:to-red-900/30 border-red-200/30 dark:border-red-800/30"
-                      )}>
-                        <div className="flex items-start gap-3">
-                          <div className={cn(
-                            "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center",
-                            fileEditData.type === 'processing'
-                              ? "bg-purple-500/20 dark:bg-purple-400/20"
-                              : fileEditData.type === 'success'
-                              ? "bg-green-500/20 dark:bg-green-400/20"
-                              : "bg-red-500/20 dark:bg-red-400/20"
-                          )}>
-                            {fileEditData.type === 'processing' ? (
-                              <div className={cn(
-                                "w-3 h-3 rounded-full animate-pulse",
-                                "bg-purple-500 dark:bg-purple-400"
-                              )} />
-                            ) : fileEditData.type === 'success' ? (
-                              <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
-                            ) : (
-                              <X className="w-4 h-4 text-red-600 dark:text-red-400" />
-                            )}
+                      <Task defaultOpen={true} className="mb-4">
+                        <TaskTrigger title={fileEditData.type === 'processing' ? 'Editing file...' : fileEditData.type === 'success' ? 'File edited' : 'Edit failed'}>
+                          <div className="flex cursor-pointer items-center gap-2 text-muted-foreground hover:text-foreground">
+                            <FileEdit className="size-4" />
+                            <p className="text-sm">
+                              {fileEditData.type === 'processing' ? 'Editing file...' : fileEditData.type === 'success' ? 'File edited successfully' : 'Failed to edit file'}
+                            </p>
                           </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            {fileEditData.type === 'processing' ? (
-                              <div>
-                                <div className="font-medium text-purple-700 dark:text-purple-300 mb-1">
-                                  Editing file: <code className="text-sm bg-purple-100/50 dark:bg-purple-900/30 px-1.5 py-0.5 rounded">{fileEditData.fileName}</code>
-                                </div>
-                                <div className="text-sm text-purple-600/80 dark:text-purple-400/80 italic">
-                                  Generating edits for: "{fileEditData.editPrompt}"...
-                                </div>
-                              </div>
-                            ) : fileEditData.type === 'success' ? (
-                              <div>
-                                <div className="font-medium text-green-700 dark:text-green-300 mb-2">
-                                File edited successfully!
-                                </div>
-                                <div className="space-y-1 text-sm text-green-600/90 dark:text-green-400/90">
-                                  <div className="mt-2 pt-2 border-t border-green-200/30 dark:border-green-800/30">
-                                    <span className="text-green-700 dark:text-green-300">Review the changes in the file editor and accept or reject them.</span>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <div>
-                                <div className="font-medium text-red-700 dark:text-red-300 mb-2">
-                                  ❌ Failed to generate edits
-                                </div>
-                                <div className="space-y-1 text-sm text-red-600/90 dark:text-red-400/90">
-                                  <div className="flex items-center gap-2">
-                                    <span>📝</span>
-                                    <span><strong>File:</strong> <code className="bg-red-100/50 dark:bg-red-900/30 px-1.5 py-0.5 rounded">{fileEditData.fileName}</code></span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span>🎯</span>
-                                    <span><strong>Request:</strong> "{fileEditData.editPrompt}"</span>
-                                  </div>
-                                  <div className="mt-2 pt-2 border-t border-red-200/30 dark:border-red-800/30">
-                                    <span className="text-red-700 dark:text-red-300">Please try again or edit the file manually.</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                        </TaskTrigger>
+                        <TaskContent>
+                          <TaskItem>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">File:</span>
+                              <TaskItemFile>{fileEditData.fileName}</TaskItemFile>
+                            </div>
+                          </TaskItem>
+                          <TaskItem>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">Request:</span>
+                              <span className="italic">"{fileEditData.editPrompt}"</span>
+                            </div>
+                          </TaskItem>
+                          {fileEditData.type === 'processing' ? (
+                            <TaskItem>
+                              <span className="italic">Generating edits...</span>
+                            </TaskItem>
+                          ) : fileEditData.type === 'success' ? (
+                            <TaskItem>
+                              <span className="text-foreground">✓ Review the changes in the file editor and accept or reject them.</span>
+                            </TaskItem>
+                          ) : (
+                            <TaskItem>
+                              <span className="text-destructive">❌ Please try again or edit the file manually.</span>
+                            </TaskItem>
+                          )}
+                        </TaskContent>
+                      </Task>
                     )}
                                     
-                    <ReactMarkdown
-                      components={{
-                        pre: ({ node, ...props }: any) => {
-                          return <CodeBlock {...props} />;
-                        },
-                        p: ({ node, children, ...props }: any) => {
-                          return <p className="mb-4 leading-relaxed" {...props}>{children}</p>;
-                        },
-                        ul: ({ node, ordered, ...props }: any) => {
-                          return <ul className="my-4 list-disc list-outside pl-6" {...props} />;
-                        },
-                        ol: ({ node, ordered, ...props }: any) => {
-                          return <ol className="my-4 list-decimal list-outside pl-6" {...props} />;
-                        },
-                        li: ({ node, checked, ...props }: any) => {
-                          return <li className="mb-2" {...props} />;
-                        },
-                        h1: ({ node, ...props }: any) => {
-                          return <h1 className="text-2xl font-bold mt-6 mb-4" {...props} />;
-                        },
-                        h2: ({ node, ...props }: any) => {
-                          return <h2 className="text-xl font-semibold mt-6 mb-3" {...props} />;
-                        },
-                        h3: ({ node, ...props }: any) => {
-                          return <h3 className="text-lg font-semibold mt-6 mb-3" {...props} />;
-                        },
-                        h4: ({ node, ...props }: any) => {
-                          return <h4 className="text-base font-medium mt-5 mb-2" {...props} />;
-                        },
-                        h5: ({ node, ...props }: any) => {
-                          return <h5 className="text-sm font-medium mt-4 mb-2" {...props} />;
-                        },
-                        h6: ({ node, ...props }: any) => {
-                          return <h6 className="text-sm font-medium mt-4 mb-2" {...props} />;
-                        },
-                        blockquote: ({ node, ...props }: any) => {
-                          return <blockquote className="border-l-4 border-primary/30 pl-4 my-4 text-muted-foreground italic" {...props} />;
-                        },
-                        hr: ({ node, ...props }: any) => {
-                          return <hr className="my-6 border-t border-border" {...props} />;
-                        },
-                        table: ({ node, ...props }: any) => {
-                          return (
-                            <div className="flex-1 overflow-auto" 
-                  style={{
-                    WebkitUserSelect: 'text',
-                    userSelect: 'text',
-                    MozUserSelect: 'text',
-                    msUserSelect: 'text',
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'rgba(0,0,0,0.2)',
-                  }}
-                  data-mobile-selectable="true">
-                              <table className="w-full border-collapse text-left" {...props} />
-                            </div>
-                          );
-                        },
-                        thead: ({ node, ...props }: any) => {
-                          return <thead className="bg-muted/50" {...props} />;
-                        },
-                        tbody: ({ node, ...props }: any) => {
-                          return <tbody {...props} />;
-                        },
-                        tr: ({ node, ...props }: any) => {
-                          return <tr className="border-b border-border" {...props} />;
-                        },
-                        th: ({ node, ...props }: any) => {
-                          return <th className="px-4 py-2 text-left font-semibold" {...props} />;
-                        },
-                        td: ({ node, ...props }: any) => {
-                          return <td className="px-4 py-2" {...props} />;
-                        },
-                        a: ({ node, href, ...props }: any) => {
-                          return <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props} />;
-                        },
-                        img: ({ node, src, alt, ...props }: any) => {
-                          return <img src={src} alt={alt} className="max-w-full my-4 rounded-md" {...props} />;
-                        },
-                        strong: ({ node, ...props }: any) => {
-                          return <strong className="font-bold" {...props} />;
-                        },
-                        em: ({ node, ...props }: any) => {
-                          return <em className="italic" {...props} />;
-                        },
-                        del: ({ node, ...props }: any) => {
-                          return <del className="line-through" {...props} />;
-                        },
-                      }}
-                    >
+                    <Response className="prose prose-sm dark:prose-invert max-w-none">
                       {renderMessageContent()}
-                    </ReactMarkdown>
+                    </Response>
                     
                     {/* Grounding metadata display */}
                     {message.groundingMetadata && message.groundingMetadata.groundingChunks && message.groundingMetadata.groundingChunks.length > 0 && (
-                      <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                          <span className="text-sm font-medium text-red-700 dark:text-red-300">Sources</span>
-                        </div>
-                        {message.groundingMetadata.groundingChunks && message.groundingMetadata.groundingChunks.length > 0 && (
-                          <div className="space-y-1">
-                            {message.groundingMetadata.groundingChunks.slice(0, 3).map((chunk: any, index: number) => {
+                      <div className="mt-4">
+                        <Task defaultOpen={false} className="mb-4">
+                          <TaskTrigger title="Web search performed">
+                            <div className="flex cursor-pointer items-center gap-2 text-muted-foreground hover:text-foreground">
+                              <Search className="size-4" />
+                              <p className="text-sm">Searched the web</p>
+                            </div>
+                          </TaskTrigger>
+                          <TaskContent>
+                            {message.groundingMetadata.webSearchQueries && message.groundingMetadata.webSearchQueries.length > 0 && (
+                              <TaskItem>
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-muted-foreground">Queries:</span>
+                                  <div className="flex flex-wrap gap-2">
+                                    {message.groundingMetadata.webSearchQueries.map((query: string, idx: number) => (
+                                      <TaskItemFile key={idx}>{query}</TaskItemFile>
+                                    ))}
+                                  </div>
+                                </div>
+                              </TaskItem>
+                            )}
+                            <TaskItem>
+                              <span className="text-foreground">✓ Found {message.groundingMetadata.groundingChunks.length} {message.groundingMetadata.groundingChunks.length === 1 ? 'source' : 'sources'}</span>
+                            </TaskItem>
+                          </TaskContent>
+                        </Task>
+                        <Sources>
+                          <SourcesTrigger count={message.groundingMetadata.groundingChunks.length} />
+                          <SourcesContent>
+                            {message.groundingMetadata.groundingChunks.map((chunk: any, index: number) => {
                               // Extract clean domain from URL
                               const getDomainFromUrl = (url: string) => {
                                 try {
@@ -667,37 +548,15 @@ export function Message({ message, isLast, relatedThinking }: MessageProps) {
                               };
                               
                               return (
-                                <div key={index} className="flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 bg-red-400 rounded-full flex-shrink-0"></div>
-                                  <a 
-                                    href={chunk.web?.uri} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 hover:underline transition-colors"
-                                    title={chunk.web?.title || chunk.web?.uri}
-                                  >
-                                    {chunk.web?.title || (chunk.web?.uri ? getDomainFromUrl(chunk.web.uri) : 'Unknown source')}
-                                  </a>
-                                </div>
+                                <Source
+                                  key={index}
+                                  href={chunk.web?.uri}
+                                  title={chunk.web?.title || (chunk.web?.uri ? getDomainFromUrl(chunk.web.uri) : 'Unknown source')}
+                                />
                               );
                             })}
-                            {message.groundingMetadata.groundingChunks.length > 3 && (
-                              <div className="flex items-center gap-2 mt-1">
-                                <div className="w-1.5 h-1.5 bg-red-300 rounded-full flex-shrink-0"></div>
-                                <span className="text-xs text-red-500 dark:text-red-400">
-                                  +{message.groundingMetadata.groundingChunks.length - 3} more sources
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {message.groundingMetadata.webSearchQueries && message.groundingMetadata.webSearchQueries.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-red-200 dark:border-red-700">
-                            <div className="text-xs text-red-600 dark:text-red-400">
-                              <span className="font-medium">Search queries:</span> {message.groundingMetadata.webSearchQueries.join(', ')}
-                            </div>
-                          </div>
-                        )}
+                          </SourcesContent>
+                        </Sources>
                       </div>
                     )}
                   </div>

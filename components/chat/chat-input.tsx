@@ -1,14 +1,21 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { PaperclipIcon, ArrowUp, StopCircle, X, Brain, Files, Globe, ChevronDown, Settings } from "lucide-react"
+import { PaperclipIcon, Brain, Files, Globe, ChevronDown, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { useChatStore } from "@/lib/gemini/store"
 import { useChat } from "@/hooks/use-chat"
 import { cn } from "@/lib/utils"
+import { 
+  PromptInput, 
+  PromptInputTextarea, 
+  PromptInputToolbar, 
+  PromptInputTools,
+  PromptInputButton,
+  PromptInputSubmit 
+} from "@/components/ui/shadcn-io/ai/prompt-input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,31 +79,12 @@ export function ChatInput() {
   const [attachedFiles, setAttachedFiles] = useState<FileMetadata[]>([])
   const { isStreaming, sendMessage, stopGenerating } = useChat()
   const { generationParams, setGenerationParams } = useChatStore()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const currentChat = useChatStore((state) => state.chats.find(
     (chat) => chat.id === state.activeChat
   ))
   const [showFileUpload, setShowFileUpload] = useState(false)
   const [showFileContext, setShowFileContext] = useState(false)
   const { getSelectedFiles } = useFileContextStore()
-
-  // Auto-resize the textarea based on content
-  useEffect(() => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    // Reset height - important to shrink on delete
-    textarea.style.height = "inherit"
-    
-    // Set height based on scroll height
-    const computed = window.getComputedStyle(textarea)
-    const height = parseInt(computed.paddingTop) + 
-                  textarea.scrollHeight + 
-                  parseInt(computed.paddingBottom)
-
-    // Set the height with a maximum of 200px
-    textarea.style.height = `${Math.min(height, 200)}px`
-  }, [message])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -423,141 +411,103 @@ The user wants the raw content only, as if they were writing the file themselves
     // Keep file context selection after sending
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Submit on Enter (without shift)
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit(e)
-    }
-  }
-
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className="w-full"
-    >
-      <div className="relative rounded-xl border bg-background shadow-sm focus-within:ring-1 focus-within:ring-primary">
-        <Textarea
-          ref={textareaRef}
+    <div className="w-full">
+      <PromptInput 
+        onSubmit={handleSubmit} 
+        className="w-full"
+      >
+        <PromptInputTextarea
           placeholder={isStreaming ? "Type your next message..." : "Ask me anything..."}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className={cn(
-            "min-h-[60px] w-full resize-none border-0 bg-transparent py-4 pl-3 pr-14 sm:py-4 sm:px-5 focus-visible:ring-0",
-            "placeholder:text-muted-foreground/70 text-base"
-          )}
           disabled={!currentChat}
-          rows={1}
+          minHeight={60}
+          maxHeight={200}
         />
 
-        <div className="absolute left-1 sm:left-2 bottom-1 sm:bottom-2 flex items-center gap-1 sm:gap-2">
-          {currentChat && <ModelSelector chatId={currentChat.id} />}
-          {/* File upload button */}
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
-            disabled={!currentChat}
-            onClick={() => setShowFileUpload(!showFileUpload)}
-          >
-            <PaperclipIcon className="h-5 w-5" />
-          </Button>
-          
-          {/* File context button - only show if files are selected */}
-          {getSelectedFiles().length > 0 && (
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground relative"
+        <PromptInputToolbar>
+          <PromptInputTools>
+            {currentChat && <ModelSelector chatId={currentChat.id} />}
+            
+            <PromptInputButton
               disabled={!currentChat}
-              onClick={() => setShowFileContext(!showFileContext)}
+              onClick={() => setShowFileUpload(!showFileUpload)}
             >
-              <Files className="h-5 w-5" />
-              <span className="absolute top-0 right-0 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-              </span>
-            </Button>
-          )}
+              <PaperclipIcon className="h-5 w-5" />
+            </PromptInputButton>
+            
+            {/* File context button - only show if files are selected */}
+            {getSelectedFiles().length > 0 && (
+              <PromptInputButton
+                disabled={!currentChat}
+                onClick={() => setShowFileContext(!showFileContext)}
+                className="relative"
+              >
+                <Files className="h-5 w-5" />
+                <span className="absolute top-0 right-0 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                </span>
+              </PromptInputButton>
+            )}
 
-          <div className="flex items-center border-l pl-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md flex items-center gap-2"
-                  disabled={isStreaming}
-                >
-                  <Settings className="h-4 w-4" />
-                  Tools
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem
-                  className="flex items-center justify-between cursor-pointer"
-                  onClick={() => setGenerationParams({ thinkingEnabled: !generationParams.thinkingEnabled })}
-                >
-                  <div className="flex items-center gap-2">
-                    <Brain className="h-4 w-4" />
-                    <span>Think longer</span>
-                  </div>
-                  <Switch
-                    checked={generationParams.thinkingEnabled}
-                    onCheckedChange={() => {}}
-                    className="h-4 w-7 pointer-events-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 border border-muted-foreground/30 data-[state=checked]:border-primary"
-                  />
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="flex items-center justify-between cursor-pointer"
-                  onClick={() => setGenerationParams({ groundingEnabled: !generationParams.groundingEnabled })}
-                >
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
-                    <span>Web search</span>
-                  </div>
-                  <Switch
-                    checked={generationParams.groundingEnabled || false}
-                    onCheckedChange={() => {}}
-                    className="h-4 w-7 pointer-events-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 border border-muted-foreground/30 data-[state=checked]:border-primary"
-                  />
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+            <div className="flex items-center border-l pl-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <PromptInputButton
+                    disabled={isStreaming}
+                    size="default"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Tools</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </PromptInputButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setGenerationParams({ thinkingEnabled: !generationParams.thinkingEnabled })}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Brain className="h-4 w-4" />
+                      <span>Think longer</span>
+                    </div>
+                    <Switch
+                      checked={generationParams.thinkingEnabled}
+                      onCheckedChange={() => {}}
+                      className="h-4 w-7 pointer-events-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 border border-muted-foreground/30 data-[state=checked]:border-primary"
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setGenerationParams({ groundingEnabled: !generationParams.groundingEnabled })}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      <span>Web search</span>
+                    </div>
+                    <Switch
+                      checked={generationParams.groundingEnabled || false}
+                      onCheckedChange={() => {}}
+                      className="h-4 w-7 pointer-events-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 border border-muted-foreground/30 data-[state=checked]:border-primary"
+                    />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </PromptInputTools>
 
-        <div className="absolute right-2 bottom-2 flex items-center gap-2">
-
-          <Button 
-            size="icon" 
-            type="button"
-            onClick={isStreaming ? stopGenerating : (e) => {
-              e.preventDefault();
-              handleSubmit(e);
-            }}
+          <PromptInputSubmit
             disabled={!currentChat || (isStreaming === false && message.trim() === "")}
-            className={cn(
-              "h-10 w-10 rounded-full transition-colors send-button",
-              isStreaming ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"
-            )}
-          >
-            {isStreaming ? (
-              <StopCircle className="h-5 w-5" />
-            ) : (
-              <ArrowUp className="h-5 w-5" />
-            )}
-            <span className="sr-only">
-              {isStreaming ? "Stop generating" : "Send message"}
-            </span>
-          </Button>
-        </div>
-      </div>
+            status={isStreaming ? "streaming" : undefined}
+            onClick={isStreaming ? (e) => {
+              e.preventDefault();
+              stopGenerating();
+            } : undefined}
+          />
+        </PromptInputToolbar>
+      </PromptInput>
       
       <div className="flex justify-between items-center mt-2">
         {/* File Upload component */}
@@ -620,6 +570,6 @@ The user wants the raw content only, as if they were writing the file themselves
           </div>
         )}
       </div>
-    </form>
+    </div>
   )
 }

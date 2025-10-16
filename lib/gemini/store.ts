@@ -76,8 +76,8 @@ export const useChatStore = create<ChatStore>()(
       activeChat: null,
       generationParams: DEFAULT_GENERATION_PARAMS,
       isStreaming: false,
-      userAvatar: "/avatars/user.png",
-      geminiAvatar: "/avatars/gemini.png",
+      userAvatar: "/avatars/03.svg",
+      geminiAvatar: "/avatars/20.svg",
       globalSystemInstruction: "",
       
       // Chat pinning functionality

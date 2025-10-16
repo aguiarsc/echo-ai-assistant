@@ -66,7 +66,7 @@ export function Sidebar() {
           className="transition-transform"
           aria-label={open ? "Close sidebar" : "Open sidebar"}
         >
-          <Image src="/images/gemini icon.png" alt="Gemini" width={28} height={28} />
+          <Image src="/images/gemini.png" alt="Gemini" width={32} height={32} className="dark:invert" />
         </button>
       </div>
 

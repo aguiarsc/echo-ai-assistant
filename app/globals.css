@@ -134,3 +134,15 @@
 .send-button:hover svg {
   animation: arrow-bounce 1.2s ease-in-out infinite;
 }
+
+/* Force hide all scrollbars globally */
+* {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
