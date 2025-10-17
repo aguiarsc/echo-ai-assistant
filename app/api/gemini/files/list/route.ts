@@ -1,41 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createGeminiClient } from '@/domains/conversations/types/conversation.types';
-import { GeminiFilesApi } from '@/infrastructure/ai-integration/files-api';
-import { createErrorResponse } from '@/infrastructure/api-client/http-client';
+import { NextRequest } from 'next/server';
+import { GeminiFilesService } from '@/infrastructure/api-routes';
 
 export async function GET(req: NextRequest) {
-  try {
-    // Get API key from the secure cookie
-    const apiKey = req.cookies.get('gemini_api_key')?.value;
-    
-    if (!apiKey) {
-      return createErrorResponse(
-        'Missing Gemini API key. Please set it in the application settings.',
-        401,
-        'API_KEY_MISSING'
-      );
-    }
-
-    // Initialize Gemini client and Files API
-    const genAI = createGeminiClient(apiKey);
-    const filesApi = new GeminiFilesApi(genAI);
-
-    // Get query parameters
-    const url = new URL(req.url);
-    const pageSize = parseInt(url.searchParams.get('pageSize') || '10');
-    const pageToken = url.searchParams.get('pageToken') || undefined;
-
-    // List files from Gemini API
-    const filesResponse = await filesApi.listFiles(pageSize, pageToken);
-
-    // Return file list to client
-    return NextResponse.json(filesResponse);
-  } catch (error) {
-    console.error('File listing error:', error);
-    return createErrorResponse(
-      `Failed to list files: ${(error as Error).message}`,
-      500,
-      'LIST_FILES_FAILED'
-    );
-  }
+  return GeminiFilesService.listFiles(req);
 }
