@@ -1,7 +1,7 @@
 "use client"
 
-import { ErrorDebugPanel } from '@/components/error-debug-panel'
-import { Button } from '@/components/ui/button'
+import { ErrorDebugPanel } from '@/shared/components/ErrorDebugPanel'
+import { Button } from '@/shared/ui-components/button'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 

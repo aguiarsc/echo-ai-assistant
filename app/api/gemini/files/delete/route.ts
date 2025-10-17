@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createGeminiClient } from '@/lib/gemini';
-import { GeminiFilesApi } from '@/lib/gemini/files-api';
-import { createErrorResponse } from '@/lib/api/helpers';
+import { createGeminiClient } from '@/domains/conversations/types/conversation.types';
+import { GeminiFilesApi } from '@/infrastructure/ai-integration/files-api';
+import { createErrorResponse } from '@/infrastructure/api-client/http-client';
 
 export async function DELETE(req: NextRequest) {
   try {
