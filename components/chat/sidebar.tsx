@@ -140,9 +140,10 @@ export function Sidebar() {
                   <div 
                     key={chat.id}
                     className={cn(
-                      "group flex items-center justify-between rounded-md py-2 px-3",
-                      "hover:bg-accent/50 transition-colors",
-                      activeChat === chat.id ? "bg-accent/60 text-accent-foreground shadow-sm" : "text-foreground/80"
+                      "group flex items-center justify-between rounded-md py-2 px-3 border transition-all",
+                      activeChat === chat.id 
+                        ? "bg-background border-border" 
+                        : "border-transparent hover:border-border hover:bg-accent/30"
                     )}
                   >
                     {/* Chat title area */}
@@ -153,9 +154,7 @@ export function Sidebar() {
                       )}
                       onClick={() => setActiveChat(chat.id)}
                     >
-                      <MessageCircle className={cn("h-4 w-4 shrink-0", 
-                        activeChat === chat.id ? "text-primary" : "text-muted-foreground"
-                      )} />
+                      <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                       
                       {open && (
                         <div className="flex items-center flex-1 truncate">
@@ -171,10 +170,7 @@ export function Sidebar() {
                               </Tooltip>
                             </TooltipProvider>
                           )}
-                          <div className={cn(
-                            "truncate text-sm",
-                            activeChat !== chat.id && "text-muted-foreground"
-                          )}>
+                          <div className="truncate text-sm text-foreground">
                             {renameId === chat.id ? (
                               <Input
                                 className="h-6 text-xs py-1"

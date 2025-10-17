@@ -86,11 +86,18 @@ export const useThemeStore = create<ThemeStore>()(
       }
     }),
     {
-      name: 'theme-storage',
+      name: 'theme-storage-v2',
       partialize: (state) => ({
-        currentTheme: state.currentTheme,
+        currentTheme: { id: state.currentTheme.id }, // Only store theme ID
         isDarkMode: state.isDarkMode,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Look up the fresh theme from definitions by ID
+          const freshTheme = themes.find(t => t.id === state.currentTheme.id) || defaultTheme;
+          state.currentTheme = freshTheme;
+        }
+      },
     }
   )
 );

@@ -77,8 +77,8 @@ export const themes: Theme[] = [
         --accent: oklch(0.14 0.01 264.05);
         --accent-foreground: oklch(0.98 0.01 264.05);
         --destructive: oklch(0.63 0.24 29.21);
-        --border: oklch(0.14 0.01 264.05);
-        --input: oklch(0.14 0.01 264.05);
+        --border: oklch(0.32 0.01 264.05);
+        --input: oklch(0.32 0.01 264.05);
         --ring: oklch(0.98 0.01 264.05);
         --chart-1: oklch(0.56 0.13 42.95);
         --chart-2: oklch(0.69 0.16 290.29);
@@ -91,7 +91,7 @@ export const themes: Theme[] = [
         --sidebar-primary-foreground: oklch(0.09 0.02 264.05);
         --sidebar-accent: oklch(0.14 0.01 264.05);
         --sidebar-accent-foreground: oklch(0.98 0.01 264.05);
-        --sidebar-border: oklch(0.14 0.01 264.05);
+        --sidebar-border: oklch(0.32 0.01 264.05);
         --sidebar-ring: oklch(0.98 0.01 264.05);
       `
     }
