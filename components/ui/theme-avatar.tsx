@@ -16,8 +16,8 @@ export function ThemeAvatar({ src, alt, fallback, className, onClick }: ThemeAva
     <Avatar className={cn("relative", className)} onClick={onClick}>
       <AvatarImage 
         src={src} 
-        alt={alt} 
-        className="filter dark:invert"
+        alt={alt}
+        className="object-cover"
       />
       <AvatarFallback>{fallback}</AvatarFallback>
     </Avatar>
