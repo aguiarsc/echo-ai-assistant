@@ -28,52 +28,15 @@ import { ModelSelector } from "@/components/chat/model-selector"
 import { FileMetadata } from "@/lib/gemini/files-api"
 import { FileContext, FileContextSummary } from "@/components/chat/file-context"
 import { useFileContextStore } from "@/lib/files/context-store"
-import { createChatAttachments, convertFileToContext, generateFileContextInstruction } from "@/lib/gemini/file-context-adapter"
+import { createChatAttachments } from "@/lib/gemini/file-context-adapter"
 import { parseFileIntent } from "@/lib/ai/intent-parser"
-import { generateGeminiResponse } from "@/lib/gemini/api"
 import { useFilesStore } from "@/lib/files/store"
-import { selectBestPreset, getPresetSelectionMessage } from "@/lib/ai/preset-selector"
+import { selectBestPreset } from "@/lib/ai/preset-selector"
 import { PROMPT_PRESETS } from "@/lib/ai/presets"
+import { handleFileEdit, handleFileCreation, generateFileOperationMessage } from "@/lib/ai/file-operations"
+import { getRecentMessages } from "@/lib/gemini/message-formatters"
 
-// Helper function to clean AI-generated content from unwanted introductions
-function cleanFileContent(content: string): string {
-  if (!content) return content
-  
-  // Remove common AI introduction patterns
-  const introPatterns = [
-    /^Here\s+(is|are)\s+.+?[.!:]\s*/i,
-    /^I've\s+created\s+.+?[.!:]\s*/i,
-    /^This\s+(is|contains)\s+.+?[.!:]\s*/i,
-    /^Below\s+(is|are)\s+.+?[.!:]\s*/i,
-    /^The\s+following\s+.+?[.!:]\s*/i,
-    /^Let\s+me\s+.+?[.!:]\s*/i,
-    /^I'll\s+.+?[.!:]\s*/i,
-    /^.*ranging\s+from\s+.+?[.!:]\s*/i,
-    /^.*few\s+.+?recipes?\s+.+?[.!:]\s*/i,
-    /^Here\s+are\s+a\s+few\s+very\s+short\s+recipes\s+.+?[.!:]\s*/i,
-    /^Here\s+are\s+some\s+.+?recipes\s+.+?[.!:]\s*/i,
-    /^I've\s+prepared\s+.+?[.!:]\s*/i,
-    /^I've\s+generated\s+.+?[.!:]\s*/i,
-    /^.*ranging\s+from\s+a\s+.+?to\s+a\s+.+?[.!:]\s*/i
-  ]
-  
-  let cleanedContent = content
-  
-  // Apply each pattern to remove introductions
-  for (const pattern of introPatterns) {
-    cleanedContent = cleanedContent.replace(pattern, '')
-  }
-  
-  // Remove any leading whitespace or newlines after cleaning
-  cleanedContent = cleanedContent.replace(/^\s+/, '')
-  
-  // If we removed too much and the content is now empty or very short, return original
-  if (cleanedContent.trim().length < 10) {
-    return content
-  }
-  
-  return cleanedContent
-}
+// Content cleaning helper has been moved to lib/utils/content-cleaner.ts
 
 export function ChatInput() {
   const [message, setMessage] = useState("")
@@ -98,169 +61,19 @@ export function ChatInput() {
     const chatStore = useChatStore.getState()
     
     // Get last 5 messages for context (helps resolve "it", "the file", etc.)
-    const recentMessages = currentChat.messages
-      .slice(-5)
-      .filter(m => m.role !== 'thinking')
-      .map(m => ({ 
-        role: m.role === 'user' ? 'user' as const : 'model' as const, 
-        content: m.content 
-      }))
+    const recentMessages = getRecentMessages(currentChat.messages, 5)
     
     const intent = await parseFileIntent(messageToSend, chatStore.apiKey, currentChat.model, recentMessages)
     
-    // Handle file edit intent
+    // Handle file edit intent using the file-operations service
     if (intent && intent.type === 'edit') {
       try {
         const filesStore = useFilesStore.getState()
-        
-        // Find the file to edit
-        const fileToEdit = Object.values(filesStore.files).find(
-          node => node.type === 'file' && 
-          (node.name.toLowerCase() === intent.fileName.toLowerCase() ||
-           node.path.toLowerCase().includes(intent.fileName.toLowerCase()))
-        )
-        
-        if (fileToEdit) {
-          // Generate the edited content directly
-          const chatStore = useChatStore.getState()
-          const chat = chatStore.chats.find(c => c.id === chatStore.activeChat)
-          
-          if (chat) {
-            const userTurnId = crypto.randomUUID()
-            chatStore.addMessage(chat.id, {
-              role: "user",
-              content: messageToSend,
-              turnId: userTurnId
-            })
-            
-            // Add processing message with special format
-            const processingMessageId = chatStore.addMessage(chat.id, {
-              role: "model",
-              content: `FILE_EDIT_PROCESSING:${fileToEdit.name}:${intent.editPrompt}`,
-              turnId: userTurnId
-            })
-            
-            try {
-              // Generate the edited content using AI
-              const editSystemInstruction = `You are a file content editor. Your task is to edit the provided content according to the user's request. 
-
-Rules:
-- Make only the changes requested
-- Preserve the original formatting and structure unless specifically asked to change it
-- Return ONLY the edited content, no explanations or commentary
-- Do not add introductory text or meta-commentary
-- The output should be the complete edited file content`
-              
-              const editPrompt = `Edit the following content: "${intent.editPrompt}"
-
-Original content:
-${fileToEdit.content || ''}
-
-Edited content (no explanations):`
-
-              const response = await generateGeminiResponse({
-                apiKey: chatStore.apiKey,
-                model: "gemini-2.5-flash",
-                messages: [{
-                  role: "user",
-                  content: editPrompt,
-                  id: crypto.randomUUID(),
-                  timestamp: Date.now()
-                }],
-                systemInstruction: editSystemInstruction,
-                params: {
-                  ...chatStore.generationParams,
-                  temperature: 0.7,
-                  maxOutputTokens: 4096
-                }
-              })
-
-              const editedContent = response.text.trim()
-              
-              // Store the edited content for diff view (don't apply yet)
-              filesStore.setEditedContent(fileToEdit.id, editedContent, intent.editPrompt)
-              
-              // Update the processing message with success
-              chatStore.updateMessage(chat.id, processingMessageId, 
-                `FILE_EDIT_SUCCESS:${fileToEdit.name}:${intent.editPrompt}`
-              )
-              
-              // Open the file in the editor to show the diff - only if not already open
-              if (!filesStore.editorOpen || filesStore.activeFileId !== fileToEdit.id) {
-                filesStore.openEditor(fileToEdit.id)
-              }
-              
-            } catch (error) {
-              console.error("Error editing file:", error)
-              chatStore.updateMessage(chat.id, processingMessageId,
-                `FILE_EDIT_ERROR:${fileToEdit.name}:${intent.editPrompt}`
-              )
-            }
-          }
-          
-          // Clear form
-          setAttachedFiles([])
-          setShowFileUpload(false)
-          return
-        } else {
-          // File not found - add message to chat
-          const chatStore = useChatStore.getState()
-          const chat = chatStore.chats.find(c => c.id === chatStore.activeChat)
-          
-          if (chat) {
-            const userTurnId = crypto.randomUUID()
-            chatStore.addMessage(chat.id, {
-              role: "user",
-              content: messageToSend,
-              turnId: userTurnId
-            })
-            
-            chatStore.addMessage(chat.id, {
-              role: "model",
-              content: `I couldn't find a file named "${intent.fileName}" in your file tree. Please check the filename or create the file first. You can also select files from the file tree and use the Smart Edit feature in the file editor.`,
-              turnId: userTurnId
-            })
-          }
-          return
-        }
-      } catch (error) {
-        console.error("Error handling edit intent:", error)
-        // Continue with normal chat flow if edit intent handling fails
-      }
-    }
-
-    // Handle file creation intent
-    if (intent && intent.type === 'create') {
-      try {
-        // Create the file in the file tree (root level for now)
-        const filesStore = useFilesStore.getState()
-        
-        // Check if the file already exists
-        const existingFile = Object.values(filesStore.files).find(
-          node => node.type === 'file' && node.name.toLowerCase() === intent.fileName.toLowerCase()
-        )
-        
-        let fileName = intent.fileName
-        let fileId: string
-        
-        if (existingFile) {
-          // File exists - just use the existing one and update its content
-          fileId = existingFile.id
-          console.info(`File '${intent.fileName}' already exists, updating content...`)
-        } else {
-          // Create new file
-          fileId = filesStore.createFile(null, fileName)
-        }
-        
-        // First, get the necessary pieces from the chat store
         const chatStore = useChatStore.getState()
         const chat = chatStore.chats.find(c => c.id === chatStore.activeChat)
         
-        if (!chat || !chatStore.apiKey) {
-          throw new Error("Chat not found or API key not set")
-        }
+        if (!chat) return
         
-        // Show visual feedback in the chat that we're processing
         const userTurnId = crypto.randomUUID()
         chatStore.addMessage(chat.id, {
           role: "user",
@@ -268,101 +81,110 @@ Edited content (no explanations):`
           turnId: userTurnId
         })
         
-        // Add temporary processing message with thinking-style visual feedback
+        // Add processing message
         const processingMessageId = chatStore.addMessage(chat.id, {
           role: "model",
-          content: `FILE_CREATION_PROCESSING:${fileName}`,
+          content: `FILE_EDIT_PROCESSING:${intent.fileName}:${intent.editPrompt}`,
           turnId: userTurnId
         })
         
-        // Import the required API function
-        const { generateGeminiResponse } = await import("@/lib/gemini/api")
+        // Use the file-operations service to handle the edit
+        const result = await handleFileEdit(
+          intent,
+          chatStore.apiKey,
+          chat.model,
+          chatStore.generationParams,
+          (fileName) => Object.values(filesStore.files).find(
+            node => node.type === 'file' && 
+            (node.name.toLowerCase() === fileName.toLowerCase() ||
+             node.path.toLowerCase().includes(fileName.toLowerCase()))
+          ),
+          filesStore.setEditedContent
+        )
         
-        // Enhance the content prompt based on file type and available context
-        let contentPrompt = intent.contentPrompt
+        // Update message based on result
+        const statusMessage = generateFileOperationMessage(result, intent.editPrompt)
+        chatStore.updateMessage(chat.id, processingMessageId, statusMessage)
         
-        // If no explicit content prompt or it's very short, make a better one
-        if (!contentPrompt || contentPrompt.length < 10) {
-          const fileExt = fileName.split('.').pop()?.toLowerCase() || ''
-          
-          if (fileExt === 'md') {
-            contentPrompt = `Create professional markdown content for a document named "${fileName}". Extract any relevant topic information from the filename and expand on it with appropriate structure and formatting.`
-          } else if (['txt', 'text'].includes(fileExt)) {
-            contentPrompt = `Create text content for "${fileName}". If the filename suggests a specific topic, please focus on that.`
-          } else {
-            contentPrompt = `Create appropriate content for a file named "${fileName}". Infer the desired content from the filename.`
+        // Open editor if successful
+        if (result.success && result.fileId) {
+          if (!filesStore.editorOpen || filesStore.activeFileId !== result.fileId) {
+            filesStore.openEditor(result.fileId)
           }
         }
         
-        // Create a system instruction for clean file content generation
-        const fileContentSystemInstruction = `You are a file content generator. Your task is to create clean, direct content for files without any conversational elements, introductions, or explanations.
+        // Clear form
+        setAttachedFiles([])
+        setShowFileUpload(false)
+        return
+      } catch (error) {
+        console.error("Error handling edit intent:", error)
+        // Continue with normal chat flow if edit intent handling fails
+      }
+    }
 
-IMPORTANT RULES:
-- Generate ONLY the actual file content that should be saved
-- Do NOT include any introductory text like "Here is..." or "I've created..."
-- Do NOT include any explanatory text or commentary
-- Do NOT add conversational elements or meta-commentary
-- Start directly with the actual content
-- The content should be complete and ready to use
-- Format appropriately for the file type (markdown, text, etc.)
-
-The user wants the raw content only, as if they were writing the file themselves.`
+    // Handle file creation intent using the file-operations service
+    if (intent && intent.type === 'create') {
+      try {
+        const filesStore = useFilesStore.getState()
+        const chatStore = useChatStore.getState()
+        const chat = chatStore.chats.find(c => c.id === chatStore.activeChat)
         
-        // Get selected files from file tree for context
-        const selectedFiles = getSelectedFiles()
-        
-        // Prepare enhanced system instruction with file context if needed
-        let enhancedSystemInstruction = fileContentSystemInstruction;
-        if (selectedFiles.length > 0) {
-          // Convert file nodes to context format
-          const fileContexts = selectedFiles
-            .filter(file => file.type === "file")
-            .map(file => convertFileToContext(file))
-          
-          // Add file context to system instruction
-          if (fileContexts.length > 0) {
-            const contextInstruction = generateFileContextInstruction(fileContexts)
-            enhancedSystemInstruction = `${fileContentSystemInstruction}\n\n${contextInstruction}`
-          }
+        if (!chat || !chatStore.apiKey) {
+          throw new Error("Chat not found or API key not set")
         }
         
-        // Generate content directly using the API with clean content instructions
-        const response = await generateGeminiResponse({
-          apiKey: chatStore.apiKey,
-          model: chat.model,
-          messages: [{
-            role: "user",
-            content: contentPrompt,
-            id: crypto.randomUUID(),
-            timestamp: Date.now()
-          }],
-          systemInstruction: enhancedSystemInstruction,
-          params: chatStore.generationParams
+        // Show visual feedback in the chat
+        const userTurnId = crypto.randomUUID()
+        chatStore.addMessage(chat.id, {
+          role: "user",
+          content: messageToSend,
+          turnId: userTurnId
         })
         
-        // Clean and update the file with the generated content
-        let generatedContent = response.text || ""
+        // Add processing message
+        const processingMessageId = chatStore.addMessage(chat.id, {
+          role: "model",
+          content: `FILE_CREATION_PROCESSING:${intent.fileName}`,
+          turnId: userTurnId
+        })
         
-        // Clean up any unwanted AI introductions or explanations
-        generatedContent = cleanFileContent(generatedContent)
+        // Get selected files for context
+        const selectedFiles = getSelectedFiles()
         
-        filesStore.updateFileContent(fileId, generatedContent)
+        // Use the file-operations service to handle the creation
+        const result = await handleFileCreation(
+          intent,
+          chatStore.apiKey,
+          chat.model,
+          chatStore.generationParams,
+          (fileName) => {
+            const existingFile = Object.values(filesStore.files).find(
+              node => node.type === 'file' && node.name.toLowerCase() === fileName.toLowerCase()
+            )
+            if (existingFile) {
+              return { fileId: existingFile.id, existed: true }
+            }
+            return { fileId: filesStore.createFile(null, fileName), existed: false }
+          },
+          filesStore.updateFileContent,
+          selectedFiles
+        )
         
-        // Add a small delay before opening the editor to ensure state is updated
-        setTimeout(() => {
-          // Force refresh the file node to ensure it has the latest content
-          const updatedNode = filesStore.getNodeById(fileId)
-          if (updatedNode && updatedNode.type === 'file') {
-            // Re-update with same content to trigger subscribers
-            filesStore.updateFileContent(fileId, updatedNode.content || "")
-          }
-          // Open the editor to show the file
-          filesStore.openEditor(fileId)
-        }, 100)
+        // Update message based on result
+        const statusMessage = generateFileOperationMessage(result)
+        chatStore.updateMessage(chat.id, processingMessageId, statusMessage)
         
-        // Update the temporary message with confirmation
-        const confirmationMessage = `FILE_CREATION_SUCCESS:${fileName}`
-        chatStore.updateMessage(chat.id, processingMessageId, confirmationMessage)
+        // Open editor if successful
+        if (result.success && result.fileId) {
+          setTimeout(() => {
+            const updatedNode = filesStore.getNodeById(result.fileId!)
+            if (updatedNode && updatedNode.type === 'file') {
+              filesStore.updateFileContent(result.fileId!, updatedNode.content || "")
+            }
+            filesStore.openEditor(result.fileId!)
+          }, 100)
+        }
         
         // Clean up
         setAttachedFiles([])
@@ -371,7 +193,6 @@ The user wants the raw content only, as if they were writing the file themselves
       } catch (error) {
         console.error("Error creating file:", error)
         
-        // Add error message to chat
         const chatStore = useChatStore.getState()
         const chat = chatStore.chats.find(c => c.id === chatStore.activeChat)
         
@@ -398,14 +219,8 @@ The user wants the raw content only, as if they were writing the file themselves
       try {
         const chatStore = useChatStore.getState()
         
-        // Get conversation history for context
-        const recentMessages = currentChat.messages
-          .slice(-3)
-          .filter(m => m.role !== 'thinking')
-          .map(m => ({ 
-            role: m.role === 'user' ? 'user' as const : 'model' as const, 
-            content: m.content 
-          }))
+        // Get conversation history for context using the message-formatters utility
+        const recentMessages = getRecentMessages(currentChat.messages, 3)
         
         // Select the best preset for this task
         const presetSelection = await selectBestPreset(

@@ -5,7 +5,8 @@ import { useAutomaticTitleGeneration } from "@/lib/gemini/title-generator";
 import { FileMetadata } from "@/lib/gemini/files-api";
 import { useFileContextStore } from "@/lib/files/context-store";
 import { useFilesStore, FileNode } from "@/lib/files/store";
-import { generateFileContextInstruction, convertFileToContext, generateFileContentText } from "@/lib/gemini/file-context-adapter";
+import { prepareFileContext, enhanceMessageWithContext, generateThinkingContentWithContext } from "@/lib/files/file-context-service";
+import { buildSystemInstruction } from "@/lib/gemini/system-instruction-builder";
 
 // Default typing speed fallback (will be overridden by generationParams.streamingSpeed)
 const DEFAULT_TYPING_SPEED = 25;
@@ -42,35 +43,8 @@ export function useChat() {
     }
   }, []);
 
-  // Helper function to recursively collect all files from a folder structure
-  const collectFilesFromFolders = useCallback((selectedFiles: FileNode[]): FileNode[] => {
-    const filesStore = useFilesStore.getState();
-    const result: FileNode[] = [];
-    
-    // Process each selected node (file or folder)
-    const processNode = (node: FileNode) => {
-      if (node.type === "file") {
-        // If it's a file, simply add it
-        result.push(node);
-      } else if (node.type === "folder" && node.children) {
-        // If it's a folder, add it and recursively process all children
-        result.push(node);
-        
-        // Process all children
-        node.children.forEach(childId => {
-          const childNode = filesStore.getNodeById(childId);
-          if (childNode) {
-            processNode(childNode);
-          }
-        });
-      }
-    };
-    
-    // Process all initially selected files/folders
-    selectedFiles.forEach(processNode);
-    
-    return result;
-  }, []);
+  // Use the file-context-service for handling file collection
+  // This functionality has been extracted to a reusable service
 
   const sendMessage = useCallback(async (content: string, attachedFiles: FileMetadata[] = []) => {
     if (!activeChat || !apiKey || !content.trim()) {
@@ -93,50 +67,16 @@ export function useChat() {
     const turnId = crypto.randomUUID();
 
     try {
-      // Get selected files for context directly from the file context store
+      // Get selected files for context using the file-context-service
       const fileStore = useFileContextStore.getState();
       const selectedFiles = fileStore.getSelectedFiles();
+      const filesStore = useFilesStore.getState();
       
-      // Recursively collect all files from the selected folders
-      const allFiles = collectFilesFromFolders(selectedFiles);
+      // Prepare file context using the centralized service
+      const fileContexts = prepareFileContext(selectedFiles, filesStore.getNodeById);
       
-      // Convert file nodes to context content
-      const fileContexts = allFiles.map(convertFileToContext);
-      
-      // Generate file context instruction if needed
-      let enhancedContent = content;
-      if (fileContexts.length > 0) {
-        // Format the file names in a cleaner way
-        const fileNames = fileContexts
-          .filter(file => file.type === "file") // Only include files, not folders
-          .map(file => file.name);
-        
-        // Add context marker for the message component to detect and style
-        if (fileNames.length > 0) {
-          const contextMarker = `CONTEXT_FILES_PROVIDED:${JSON.stringify(fileNames)}`;
-          enhancedContent = contextMarker + "\n\n" + enhancedContent;
-        }
-      }
-      
-      // Add file contents as context in the thinking section if enabled
-      let fileContentText = "";
-      if (fileContexts.length > 0) {
-        // Create a detailed thinking section that shows actual file content
-        fileContentText = "=== FILE CONTEXT SUMMARY ===\n\n";
-        
-        for (const file of fileContexts) {
-          // Skip directory entries since we're already including their children separately
-          if (file.type === "folder") {
-            continue;
-          }
-          
-          fileContentText += `FILE: ${file.path}\n`;
-          fileContentText += `TYPE: ${file.type}\n`;
-          fileContentText += `CONTENT:\n\`\`\`\n${file.content || "[Empty file]"}\n\`\`\`\n\n`;
-        }
-        
-        fileContentText += "=== END OF FILE CONTEXT ===\n\n";
-      }
+      // Enhance message with file context markers
+      const enhancedContent = enhanceMessageWithContext(content, fileContexts);
 
       addMessage(chat.id, { 
         role: "user", 
@@ -147,9 +87,7 @@ export function useChat() {
       const modelMessageId = addMessage(chat.id, { role: "model", content: "", turnId });
       let thinkingMessageId: string | null = null;
       if (generationParams.thinkingEnabled && generationParams.includeSummaries) {
-        const thinkingContent = fileContexts.length > 0 
-          ? `Processing file context (${fileContexts.length} file${fileContexts.length > 1 ? 's' : ''})...\n\nAnalyzing the provided files and thinking about your query...` 
-          : "Thinking about your query... ";
+        const thinkingContent = generateThinkingContentWithContext(fileContexts);
         thinkingMessageId = addMessage(chat.id, { role: "thinking", content: thinkingContent, turnId });
       }
 
@@ -194,14 +132,11 @@ export function useChat() {
         }
       }, generationParams.streamingSpeed || DEFAULT_TYPING_SPEED);
 
-      // Prepare enhanced system instruction with file context if needed
-      let enhancedSystemInstruction = globalSystemInstruction || "";
-      if (fileContexts && fileContexts.length > 0) {
-        const fileContextInstruction = generateFileContextInstruction(fileContexts);
-        enhancedSystemInstruction = enhancedSystemInstruction 
-          ? `${enhancedSystemInstruction}\n\n${fileContextInstruction}`
-          : fileContextInstruction;
-      }
+      // Build enhanced system instruction with file context using the centralized builder
+      const enhancedSystemInstruction = buildSystemInstruction(
+        globalSystemInstruction || "",
+        fileContexts.length > 0 ? fileContexts : undefined
+      );
 
       const response = await generateGeminiResponse({
         systemInstruction: enhancedSystemInstruction,

@@ -3,6 +3,7 @@
 
 import { generateGeminiResponse } from "@/lib/gemini/api";
 import { GeminiModel } from "@/lib/gemini";
+import { buildConversationContext } from "@/lib/gemini/message-formatters";
 
 export interface FileCreationIntent {
   type: 'create';
@@ -30,14 +31,10 @@ export async function parseFileIntent(
   conversationHistory: Array<{ role: 'user' | 'model', content: string }> = []
 ): Promise<IntentResult> {
   try {
-    // Build conversation context summary
-    let contextSummary = '';
-    if (conversationHistory.length > 0) {
-      contextSummary = '\n\nRECENT CONVERSATION:\n';
-      contextSummary += conversationHistory.map(msg => 
-        `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
-      ).join('\n');
-    }
+    // Build conversation context summary using the message-formatters utility
+    const contextSummary = buildConversationContext(
+      conversationHistory as any
+    );
 
     const response = await generateGeminiResponse({
       apiKey,

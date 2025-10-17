@@ -5,6 +5,9 @@ import {
   GenerationParams, 
   ChatMessage
 } from "./index";
+import { buildGenerationConfig, buildContentWithFiles } from "./config-builders";
+import { formatMessagesForAPI, getLastUserMessage, getHistoryExceptLast } from "./message-formatters";
+import { processStreamResponse, extractThinkingAndAnswer } from "./response-handlers";
 
 export async function generateGeminiResponse({
   apiKey,
@@ -29,10 +32,7 @@ export async function generateGeminiResponse({
     const genAI = new GoogleGenAI({ apiKey });
     
     // Convert our message format to Google GenAI format
-    const history = messages.filter(m => m.role !== 'thinking').map(msg => ({
-      role: msg.role === 'model' ? 'model' : 'user',
-      parts: [{ text: msg.content }],
-    }));
+    const history = formatMessagesForAPI(messages);
 
     // The 'systemInstruction' parameter is not consistently reliable.
     // To ensure the instruction is followed, we prepend it to the latest user message.
@@ -47,190 +47,49 @@ export async function generateGeminiResponse({
 
     // If there's only one message, make a generateContent call directly
     if (history.length <= 1) {
-      const lastMessage = history[0]?.parts?.[0]?.text || "";
+      const lastMessage = getLastUserMessage(history);
       
       if (onStream) {
-        const thinkingConfig = params.thinkingEnabled
-          ? { 
-              includeThoughts: params.includeSummaries ?? true,
-              thinkingBudget: params.thinkingBudget ?? -1
-            }
-          : { thinkingBudget: 0 };
-        
-        const config: any = { 
-          temperature: params.temperature,
-          topP: params.topP,
-          topK: params.topK,
-          maxOutputTokens: params.maxOutputTokens,
-          safetySettings: params.safetySettings,
-          thinkingConfig
-        };
-        
-        // Add grounding tool if enabled
-        if (params.groundingEnabled) {
-          config.tools = [{ googleSearch: {} }];
-        }
+        const config = buildGenerationConfig(params);
         
         const result = await genAI.models.generateContentStream({
           model,
-          contents: fileUris && fileUris.length > 0
-            ? [{ text: lastMessage }, ...fileUris.map(uri => ({ fileData: { fileUri: uri } }))]
-            : lastMessage,
+          contents: buildContentWithFiles(lastMessage, fileUris),
           config,
         });
 
-        let responseText = "";
-        let thinkingText = "";
-        let finalUsageMetadata = null;
-        let groundingMetadata = null;
-
-        for await (const chunk of result) {
-          if (chunk.usageMetadata) finalUsageMetadata = chunk.usageMetadata;
-          if (chunk.candidates?.[0]?.groundingMetadata) {
-            groundingMetadata = chunk.candidates[0].groundingMetadata;
-          }
-          if (!chunk.candidates?.[0]?.content?.parts) continue;
-          
-          for (const part of chunk.candidates[0].content.parts) {
-            if (!part.text) continue;
-            if (part.thought) {
-              thinkingText += part.text;
-              // Send only the new thinking chunk, not the accumulated text
-              onStream("", part.text);
-            } else {
-              // Send only the new response chunk, not the accumulated text
-              onStream(part.text, null);
-              responseText += part.text;
-            }
-          }
-        }
-
-        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata, groundingMetadata };
+        return await processStreamResponse(result, onStream);
       } else {
-        const thinkingConfig = params.thinkingEnabled
-          ? { 
-              includeThoughts: params.includeSummaries ?? true,
-              thinkingBudget: params.thinkingBudget ?? -1
-            }
-          : { thinkingBudget: 0 };
-
-        const config: any = { 
-          temperature: params.temperature,
-          topP: params.topP,
-          topK: params.topK,
-          maxOutputTokens: params.maxOutputTokens,
-          safetySettings: params.safetySettings,
-          thinkingConfig
-        };
-        
-        // Add grounding tool if enabled
-        if (params.groundingEnabled) {
-          config.tools = [{ googleSearch: {} }];
-        }
+        const config = buildGenerationConfig(params);
         
         const response = await genAI.models.generateContent({
           model,
-          contents: fileUris && fileUris.length > 0
-            ? [{ text: lastMessage }, ...fileUris.map(uri => ({ fileData: { fileUri: uri } }))]
-            : lastMessage,
+          contents: buildContentWithFiles(lastMessage, fileUris),
           config,
         });
 
-        let thinking = null;
-        let answer = null;
-        let groundingMetadata = null;
+        const { thinking, answer, groundingMetadata } = extractThinkingAndAnswer(response, params);
 
-        if (params.thinkingEnabled && params.includeSummaries && response.candidates?.[0]?.content?.parts) {
-          if (response.candidates?.[0]?.groundingMetadata) {
-            groundingMetadata = response.candidates[0].groundingMetadata;
-          }
-          for (const part of response.candidates[0].content.parts) {
-            if (!part.text) continue;
-            if (part.thought) thinking = part.text;
-            else answer = part.text;
-          }
-        } else {
-          answer = response.text || "";
-        }
-
-        return { text: answer || response.text || "", thinking, usageMetadata: response.usageMetadata, groundingMetadata };
+        return { text: answer, thinking, usageMetadata: response.usageMetadata, groundingMetadata };
       }
     } else {
-      const chatConfig: any = {
-        temperature: params.temperature,
-        topP: params.topP,
-        topK: params.topK,
-        maxOutputTokens: params.maxOutputTokens,
-        safetySettings: params.safetySettings,
-        thinkingConfig: params.thinkingEnabled
-          ? { 
-              includeThoughts: params.includeSummaries ?? true,
-              thinkingBudget: params.thinkingBudget ?? -1
-            }
-          : { thinkingBudget: 0 }
-      };
-      
-      // Add grounding tool if enabled
-      if (params.groundingEnabled) {
-        chatConfig.tools = [{ googleSearch: {} }];
-      }
+      const chatConfig = buildGenerationConfig(params);
       
       const chat = genAI.chats.create({
         model,
-        history: history.slice(0, -1),
+        history: getHistoryExceptLast(history),
         config: chatConfig
       });
 
-      const lastMessage = history[history.length - 1]?.parts?.[0]?.text || "";
-      const messageParts = fileUris && fileUris.length > 0
-        ? [{ text: lastMessage }, ...fileUris.map(uri => ({ fileData: { fileUri: uri } }))]
-        : { text: lastMessage };
+      const lastMessage = getLastUserMessage(history);
+      const messageParts = buildContentWithFiles(lastMessage, fileUris);
 
       if (onStream) {
         const result = await chat.sendMessageStream({ message: messageParts });
-        let responseText = "";
-        let thinkingText = "";
-        let finalUsageMetadata = null;
-        let groundingMetadata = null;
-
-        for await (const chunk of result) {
-          if (chunk.usageMetadata) finalUsageMetadata = chunk.usageMetadata;
-          if (chunk.candidates?.[0]?.groundingMetadata) {
-            groundingMetadata = chunk.candidates[0].groundingMetadata;
-          }
-          if (!chunk.candidates?.[0]?.content?.parts) continue;
-          
-          for (const part of chunk.candidates[0].content.parts) {
-            if (!part.text) continue;
-            if (part.thought) {
-              thinkingText += part.text;
-              // Send only the new thinking chunk, not the accumulated text
-              onStream("", part.text);
-            } else {
-              // Send only the new response chunk, not the accumulated text
-              onStream(part.text, null);
-              responseText += part.text;
-            }
-          }
-        }
-
-        return { text: responseText, thinking: thinkingText || null, usageMetadata: finalUsageMetadata, groundingMetadata };
+        return await processStreamResponse(result, onStream);
       } else {
         const response = await chat.sendMessage({ message: messageParts });
-        let thinking = null;
-        let answer = response.text || "";
-        let groundingMetadata = null;
-
-        if (params.thinkingEnabled && params.includeSummaries && response.candidates?.[0]?.content?.parts) {
-          if (response.candidates?.[0]?.groundingMetadata) {
-            groundingMetadata = response.candidates[0].groundingMetadata;
-          }
-          for (const part of response.candidates[0].content.parts) {
-            if (!part.text) continue;
-            if (part.thought) thinking = part.text;
-            else answer = part.text;
-          }
-        }
+        const { thinking, answer, groundingMetadata } = extractThinkingAndAnswer(response, params);
 
         return { text: answer, thinking, usageMetadata: response.usageMetadata, groundingMetadata };
       }
@@ -254,10 +113,7 @@ export async function countTokens({
     const genAI = new GoogleGenAI({ apiKey });
     
     // Convert our message format to Google GenAI format
-    const contents = messages.filter(m => m.role !== 'thinking').map(msg => ({
-      role: msg.role === 'model' ? 'model' : 'user',
-      parts: [{ text: msg.content }]
-    }));
+    const contents = formatMessagesForAPI(messages);
 
     const response = await genAI.models.countTokens({
       model,
