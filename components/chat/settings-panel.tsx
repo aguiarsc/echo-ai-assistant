@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -48,6 +48,8 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const currentChat = chats.find(chat => chat.id === activeChat)
   const [key, setKey] = useState(apiKey || "")
   const [saveStatus, setSaveStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [isTextareaFocused, setIsTextareaFocused] = useState(false)
 
   const avatars = [
     "/avatars/01.svg",
@@ -72,6 +74,29 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
     "/avatars/20.svg"
   ];
   
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current && isTextareaFocused) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+    }
+  }, [globalSystemInstruction, isTextareaFocused])
+
+  const handleTextareaFocus = () => {
+    setIsTextareaFocused(true)
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+    }
+  }
+
+  const handleTextareaBlur = () => {
+    setIsTextareaFocused(false)
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '80px'
+    }
+  }
+
   const handleSaveApiKey = async () => {
     try {
       setSaveStatus('loading')
@@ -115,23 +140,16 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
 
   return (
     <Tabs defaultValue="general">
-      <TabsList className="grid w-full grid-cols-6">
+      <TabsList className="grid w-full grid-cols-5">
         <TabsTrigger value="general">General</TabsTrigger>
         <TabsTrigger value="ai-presets">AI Presets</TabsTrigger>
         <TabsTrigger value="themes">Themes</TabsTrigger>
         <TabsTrigger value="appearance">Avatars</TabsTrigger>
         <TabsTrigger value="generation">Generation</TabsTrigger>
-        <TabsTrigger value="safety">Safety</TabsTrigger>
       </TabsList>
       
       <TabsContent value="general">
         <Card>
-          <CardHeader>
-            <CardTitle>API Configuration</CardTitle>
-            <CardDescription>
-              Configure your Gemini API settings
-            </CardDescription>
-          </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="api-key">API Key</Label>
@@ -206,32 +224,6 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
       <TabsContent value="ai-presets">
         <Card>
           <CardContent className="space-y-6 pt-6">
-
-            {/* Work Mode Selection */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-2">
-                <Settings2 className="h-4 w-4" />
-                Work Mode
-              </Label>
-              <Select
-                value={generationParams.workMode || 'standard'}
-                onValueChange={(value: 'standard' | 'concise') => {
-                  setGenerationParams({ workMode: value });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select work mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standard">Standard - Balanced general responses</SelectItem>
-                  <SelectItem value="concise">Concise - Brief and to-the-point answers</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Work mode affects the AI's response style and level of detail
-              </p>
-            </div>
-
             {/* AI Presets */}
             <div className="space-y-3">
               <Label className="flex items-center gap-2">
@@ -313,26 +305,21 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
       </TabsContent>
       
       <TabsContent value="generation">
-        <Card>
-          <CardHeader>
-            <CardTitle>Generation Settings</CardTitle>
-            <CardDescription>
-              Configure how AI generates responses
-            </CardDescription>
-          </CardHeader>
+        <Card>    
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="system-instruction">System Instruction</Label>
               <Textarea
+                ref={textareaRef}
                 id="system-instruction"
                 placeholder="e.g., You are a professional assistant that specializes in project management and document analysis."
                 value={globalSystemInstruction}
                 onChange={(e) => setGlobalSystemInstruction(e.target.value)}
-                className="min-h-[120px] text-sm"
+                onFocus={handleTextareaFocus}
+                onBlur={handleTextareaBlur}
+                className="text-sm resize-none transition-all duration-200"
+                style={{ height: isTextareaFocused ? 'auto' : '80px', overflow: 'hidden' }}
               />
-              <p className="text-xs text-muted-foreground">
-                Define the AI's personality, role, or style. This instruction persists across all chats.
-              </p>
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -452,169 +439,6 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 <p className="text-xs text-muted-foreground">
                   Controls typing speed: 5ms = very fast, 10ms = moderate, 15ms = slow
                 </p>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor="thinking-enabled">Thinking Mode</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Show the model's internal reasoning process
-                    </p>
-                  </div>
-                  <Switch
-                    id="thinking-enabled"
-                    checked={generationParams.thinkingEnabled}
-                    onCheckedChange={(checked: boolean) => setGenerationParams({ thinkingEnabled: checked })}
-                  />
-                </div>
-              </div>
-              
-              {generationParams.thinkingEnabled && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="thinking-budget">
-                      Thinking Budget: {generationParams.thinkingBudget === -1 ? 'Dynamic' : generationParams.thinkingBudget}
-                    </Label>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setGenerationParams({ thinkingBudget: DEFAULT_GENERATION_PARAMS.thinkingBudget })}
-                      className="h-7 text-xs"
-                    >
-                      Reset
-                    </Button>
-                  </div>
-                  
-                  {/* Dynamic thinking toggle */}
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="dynamic-thinking"
-                      checked={generationParams.thinkingBudget === -1}
-                      onChange={(e) => setGenerationParams({ 
-                        thinkingBudget: e.target.checked ? -1 : 1024 
-                      })}
-                      className="rounded"
-                    />
-                    <Label htmlFor="dynamic-thinking" className="text-sm">
-                      Dynamic thinking (recommended)
-                    </Label>
-                  </div>
-                  
-                  {generationParams.thinkingBudget !== -1 && (
-                    <>
-                      <Slider
-                        id="thinking-budget"
-                        min={128}
-                        max={8192}
-                        step={128}
-                        value={[Math.max(128, generationParams.thinkingBudget || 1024)]}
-                        onValueChange={(value: number[]) => setGenerationParams({ thinkingBudget: value[0] })}
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>128 (minimal)</span>
-                        <span>8192 (extensive)</span>
-                      </div>
-                    </>
-                  )}
-                  
-                  <p className="text-xs text-muted-foreground">
-                    {generationParams.thinkingBudget === -1 
-                      ? 'Model automatically adjusts thinking depth based on complexity'
-                      : 'Higher values allow for more detailed reasoning but increase cost'
-                    }
-                  </p>
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor="grounding-enabled">Google Search Grounding</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Enable real-time web search for current information and citations
-                    </p>
-                  </div>
-                  <Switch
-                    id="grounding-enabled"
-                    checked={generationParams.groundingEnabled || false}
-                    onCheckedChange={(checked: boolean) => setGenerationParams({ groundingEnabled: checked })}
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-end">
-            <Button onClick={onClose}>Close</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
-
-      <TabsContent value="safety">
-        <Card>
-          <CardHeader>
-            <CardTitle>Safety Settings</CardTitle>
-            <CardDescription>
-              Configure safety thresholds for content filtering
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              {Object.values(HarmCategory).map((category) => {
-                const setting = generationParams.safetySettings?.find(
-                  (s) => s.category === category
-                );
-                
-                return (
-                  <div key={category} className="space-y-2">
-                    <Label htmlFor={`safety-${category}`}>
-                      {category.replace('HARM_CATEGORY_', '').replace(/_/g, ' ')}
-                    </Label>
-                    <Select
-                      value={setting?.threshold || HarmBlockThreshold.BLOCK_NONE}
-                      onValueChange={(value: HarmBlockThreshold) => {
-                        const newSettings = [...(generationParams.safetySettings || [])];
-                        const existingIndex = newSettings.findIndex(s => s.category === category);
-                        
-                        if (existingIndex >= 0) {
-                          newSettings[existingIndex] = { 
-                            ...newSettings[existingIndex], 
-                            threshold: value as any 
-                          };
-                        } else {
-                          newSettings.push({
-                            category,
-                            threshold: value as any
-                          });
-                        }
-                        
-                        setGenerationParams({ safetySettings: newSettings });
-                      }}
-                    >
-                      <SelectTrigger id={`safety-${category}`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(HarmBlockThreshold).map((threshold) => (
-                          <SelectItem key={threshold} value={threshold}>
-                            {threshold.replace('BLOCK_', '').replace(/_/g, ' ')}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                );
-              })}
-              
-              <div className="pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setGenerationParams({ safetySettings: DEFAULT_GENERATION_PARAMS.safetySettings })}
-                >
-                  Reset to Defaults
-                </Button>
               </div>
             </div>
           </CardContent>

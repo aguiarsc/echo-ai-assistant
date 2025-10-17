@@ -57,7 +57,7 @@ export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
   topP: 0.95,
   topK: 40,
   maxOutputTokens: 4096,
-  thinkingEnabled: true,
+  thinkingEnabled: false,
   thinkingBudget: -1,
   includeSummaries: true,
   workMode: 'standard',

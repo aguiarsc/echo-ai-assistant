@@ -39,31 +39,6 @@ export function ThemeTab() {
 
   return (
     <div className="space-y-6">
-      {/* Dark Mode Toggle */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-            Appearance Mode
-          </CardTitle>
-          <CardDescription>
-            Switch between light and dark mode
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="dark-mode"
-              checked={isDarkMode}
-              onCheckedChange={toggleDarkMode}
-            />
-            <Label htmlFor="dark-mode">
-              {isDarkMode ? 'Dark Mode' : 'Light Mode'}
-            </Label>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Theme Selection */}
       <Card>
         <CardHeader>
