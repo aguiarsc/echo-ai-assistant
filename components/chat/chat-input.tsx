@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { PaperclipIcon, Brain, Files, Globe, ChevronDown, Settings } from "lucide-react"
+import { PaperclipIcon, Brain, Files, Globe, ChevronDown, Settings, Sparkles } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,8 @@ import { createChatAttachments, convertFileToContext, generateFileContextInstruc
 import { parseFileIntent } from "@/lib/ai/intent-parser"
 import { generateGeminiResponse } from "@/lib/gemini/api"
 import { useFilesStore } from "@/lib/files/store"
+import { selectBestPreset, getPresetSelectionMessage } from "@/lib/ai/preset-selector"
+import { PROMPT_PRESETS } from "@/lib/ai/presets"
 
 // Helper function to clean AI-generated content from unwanted introductions
 function cleanFileContent(content: string): string {
@@ -391,6 +393,46 @@ The user wants the raw content only, as if they were writing the file themselves
       }
     }
 
+    // Auto-select preset if enabled
+    if (generationParams.autoPresetEnabled) {
+      try {
+        const chatStore = useChatStore.getState()
+        
+        // Get conversation history for context
+        const recentMessages = currentChat.messages
+          .slice(-3)
+          .filter(m => m.role !== 'thinking')
+          .map(m => ({ 
+            role: m.role === 'user' ? 'user' as const : 'model' as const, 
+            content: m.content 
+          }))
+        
+        // Select the best preset for this task
+        const presetSelection = await selectBestPreset(
+          messageToSend, 
+          chatStore.apiKey, 
+          currentChat.model,
+          recentMessages
+        )
+        
+        // If a preset was selected with medium or high confidence, apply it
+        if (presetSelection.presetId && presetSelection.confidence !== 'low') {
+          const selectedPreset = PROMPT_PRESETS.find(p => p.id === presetSelection.presetId)
+          
+          if (selectedPreset) {
+            // Set the preset as the global system instruction
+            chatStore.setGlobalSystemInstruction(selectedPreset.prompt)
+            
+            // Log the selection for debugging
+            console.log(`Auto-selected preset: ${selectedPreset.name} (${presetSelection.confidence} confidence)`)
+          }
+        }
+      } catch (error) {
+        console.error("Error selecting preset:", error)
+        // Continue with normal flow if preset selection fails
+      }
+    }
+
     // Get selected files from file tree
     const selectedFiles = getSelectedFiles()
     const fileAttachments = selectedFiles.length > 0 
@@ -484,6 +526,20 @@ The user wants the raw content only, as if they were writing the file themselves
                     </div>
                     <Switch
                       checked={generationParams.groundingEnabled || false}
+                      onCheckedChange={() => {}}
+                      className="h-4 w-7 pointer-events-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 border border-muted-foreground/30 data-[state=checked]:border-primary"
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setGenerationParams({ autoPresetEnabled: !generationParams.autoPresetEnabled })}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      <span>Auto-select preset</span>
+                    </div>
+                    <Switch
+                      checked={generationParams.autoPresetEnabled || false}
                       onCheckedChange={() => {}}
                       className="h-4 w-7 pointer-events-none data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 border border-muted-foreground/30 data-[state=checked]:border-primary"
                     />

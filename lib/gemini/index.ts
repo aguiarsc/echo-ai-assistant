@@ -50,6 +50,7 @@ export interface GenerationParams {
   workMode?: 'standard' | 'concise'; // Track the current work style mode
   streamingSpeed?: number; // Delay in milliseconds between characters (5-15ms)
   groundingEnabled?: boolean; // Enable Google Search grounding for real-time information
+  autoPresetEnabled?: boolean; // Let AI choose the best writing preset automatically
 }
 
 export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
@@ -63,6 +64,7 @@ export const DEFAULT_GENERATION_PARAMS: GenerationParams = {
   workMode: 'standard',
   streamingSpeed: 5,
   groundingEnabled: false,
+  autoPresetEnabled: false,
   safetySettings: [
     {
       category: HarmCategory.HARM_CATEGORY_HARASSMENT,
