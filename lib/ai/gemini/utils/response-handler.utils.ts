@@ -4,7 +4,7 @@
  */
 
 import { GenerationParams } from "../types";
-import { ResponseMetadata } from "@/lib/ai/types";
+import { ResponseMetadata, UsageMetadata } from "@/lib/ai/types";
 
 /**
  * Handle a streaming chunk from Gemini
@@ -16,7 +16,7 @@ import { ResponseMetadata } from "@/lib/ai/types";
  */
 export function handleStreamChunk(
   chunk: {
-    usageMetadata?: unknown;
+    usageMetadata?: UsageMetadata;
     candidates?: Array<{
       groundingMetadata?: unknown;
       content?: {
@@ -28,10 +28,10 @@ export function handleStreamChunk(
     }>;
   },
   onStream?: (responseChunk: string, thinkingChunk: string | null) => void
-): { responseText: string; thinkingText: string; usageMetadata: unknown; groundingMetadata: unknown } {
+): { responseText: string; thinkingText: string; usageMetadata: UsageMetadata | null; groundingMetadata: unknown } {
   let responseText = "";
   let thinkingText = "";
-  let usageMetadata: unknown = null;
+  let usageMetadata: UsageMetadata | null = null;
   let groundingMetadata: unknown = null;
 
   if (chunk.usageMetadata) {
@@ -65,7 +65,7 @@ export function handleStreamChunk(
  */
 export async function processStreamResponse(
   stream: AsyncIterable<{
-    usageMetadata?: unknown;
+    usageMetadata?: UsageMetadata;
     candidates?: Array<{
       groundingMetadata?: unknown;
       content?: {
@@ -80,7 +80,7 @@ export async function processStreamResponse(
 ): Promise<ResponseMetadata> {
   let responseText = "";
   let thinkingText = "";
-  let finalUsageMetadata: unknown = null;
+  let finalUsageMetadata: UsageMetadata | null = null;
   let groundingMetadata: unknown = null;
 
   for await (const chunk of stream) {
