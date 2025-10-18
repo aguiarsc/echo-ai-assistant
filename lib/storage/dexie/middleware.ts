@@ -19,7 +19,7 @@ export interface DexieOptions<T> {
   /**
    * Function to extract a subset of the store state for persistence
    */
-  partialize?: (state: T) => any;
+  partialize?: (state: T) => unknown;
   /**
    * Function called on initialization to load data from IndexedDB
    */
@@ -27,7 +27,7 @@ export interface DexieOptions<T> {
   /**
    * Function called after each sync to IndexedDB
    */
-  onSync?: (state: any) => void;
+  onSync?: (state: unknown) => void;
 }
 
 /**
@@ -41,94 +41,101 @@ export type WithDexie<T> = T & {
 /**
  * Dexie middleware for Zustand that synchronizes state with IndexedDB
  */
-export const dexieMiddleware = <T>(options: DexieOptions<T>) => 
-  (f: StateCreator<T>) => 
-  (set: any, get: any, store: any): T & { dexieInitialized: boolean; initializeDexie: () => Promise<void> } => {
-    const {
-      name = 'dexie-store',
-      debounceInterval = 1000,
-      partialize = (state: T) => state,
-      onInitialize,
-      onSync
-    } = options;
-    
-    // Create a debounced sync function
-    const syncToDexie = debounce(async (state: T) => {
-      try {
-        const partialState = partialize(state);
-        
-        // Handle chat data persistence
-        if (partialState && 'chats' in partialState && Array.isArray(partialState.chats)) {
-          // Process each chat separately
-          for (const chat of partialState.chats) {
-            await saveChat(chat);
+export const dexieMiddleware = <T extends object>(options: DexieOptions<T>) =>
+  (f: StateCreator<T>) =>
+    (set: Parameters<StateCreator<T>>[0], get: Parameters<StateCreator<T>>[1], store: Parameters<StateCreator<T>>[2]): T & { dexieInitialized: boolean; initializeDexie: () => Promise<void> } => {
+      const {
+        name = 'dexie-store',
+        debounceInterval = 1000,
+        partialize = (state: T) => state,
+        onInitialize,
+        onSync
+      } = options;
+
+      // Create a sync function
+      const syncToDexieImpl = async (state: T) => {
+        try {
+          const partialState = partialize(state) as Record<string, unknown>;
+
+          // Handle chat data persistence
+          if (partialState && typeof partialState === 'object' && 'chats' in partialState && Array.isArray(partialState.chats)) {
+            // Process each chat separately
+            for (const chat of partialState.chats) {
+              await saveChat(chat);
+            }
           }
-        }
-        
-        // Handle file data persistence
-        if (partialState && 'files' in partialState && partialState.files) {
-          const files = partialState.files as Record<string, FileNode>;
-          // Save each file separately
-          for (const fileId in files) {
-            await saveFile(files[fileId]);
+
+          // Handle file data persistence
+          if (partialState && typeof partialState === 'object' && 'files' in partialState && partialState.files) {
+            const files = partialState.files as Record<string, FileNode>;
+            // Save each file separately
+            for (const fileId in files) {
+              await saveFile(files[fileId]);
+            }
           }
+
+          if (onSync) {
+            onSync(partialState);
+          }
+        } catch (error) {
+          console.error(`Error syncing ${name} to IndexedDB:`, error);
         }
-        
-        if (onSync) {
-          onSync(partialState);
+      };
+
+      // Create a debounced version - cast to bypass type checking since debounce uses unknown
+      const syncToDexie = debounce(syncToDexieImpl as (...args: unknown[]) => unknown, debounceInterval) as unknown as (state: T) => void;
+
+      // Create a wrapped set function that syncs to Dexie
+      const dexieSet: typeof set = (partial, replace?) => {
+        // Call the original set function
+        if (replace === true) {
+          set(partial as T, replace);
+        } else {
+          set(partial, replace);
         }
-      } catch (error) {
-        console.error(`Error syncing ${name} to IndexedDB:`, error);
-      }
-    }, debounceInterval);
-    
-    // Create a wrapped set function that syncs to Dexie
-    const dexieSet = (partial: any, replace?: boolean) => {
-      // Call the original set function
-      set(partial, replace);
-      
-      // Get current state
-      const state = get();
-      
-      // Only sync if initialized
-      if (state.dexieInitialized) {
-        syncToDexie(state);
-      }
-    };
-    
-    // Initialize the base state with our custom set function
-    const initialState = f(dexieSet, get, store);
-    
-    // Create a function to initialize Dexie
-    const initializeDexie = async (): Promise<void> => {
-      try {
-        // Run optional initialization
-        if (onInitialize) {
-          await onInitialize();
+
+        // Get current state
+        const state = get();
+
+        // Only sync if initialized
+        if ('dexieInitialized' in state && (state as { dexieInitialized: boolean }).dexieInitialized) {
+          syncToDexie(state);
         }
-        
-        // Load initial state from IndexedDB
-        const chats = await getAllChats();
-        const files = await getAllFiles();
-        
-        // Update the store with data from IndexedDB
-        set((state: T) => ({ 
-          ...state, 
-          chats,
-          files, 
-          dexieInitialized: true 
-        }));
-      } catch (error) {
-        console.error(`Error initializing ${name} from IndexedDB:`, error);
-        // Still mark as initialized to allow writes
-        set((state: T) => ({ ...state, dexieInitialized: true }));
-      }
+      };
+
+      // Initialize the base state with our custom set function
+      const initialState = f(dexieSet, get, store);
+
+      // Create a function to initialize Dexie
+      const initializeDexie = async (): Promise<void> => {
+        try {
+          // Run optional initialization
+          if (onInitialize) {
+            await onInitialize();
+          }
+
+          // Load initial state from IndexedDB
+          const chats = await getAllChats();
+          const files = await getAllFiles();
+
+          // Update the store with data from IndexedDB
+          set((state: T) => ({
+            ...state,
+            chats,
+            files,
+            dexieInitialized: true
+          }));
+        } catch (error) {
+          console.error(`Error initializing ${name} from IndexedDB:`, error);
+          // Still mark as initialized to allow writes
+          set((state: T) => ({ ...state, dexieInitialized: true }));
+        }
+      };
+
+      // Return the initial state with our Dexie extensions
+      return {
+        ...initialState,
+        dexieInitialized: false,
+        initializeDexie
+      };
     };
-    
-    // Return the initial state with our Dexie extensions
-    return {
-      ...initialState,
-      dexieInitialized: false,
-      initializeDexie
-    };
-  };

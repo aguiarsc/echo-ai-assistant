@@ -4,7 +4,7 @@ export interface ErrorContext {
   component?: string
   action?: string
   userId?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface ErrorReport {
@@ -101,10 +101,14 @@ class GlobalErrorHandler {
     const target = event.target as HTMLElement | null
     
     // Only handle resource loading errors (img, script, link, etc.)
-    if (target && target !== (window as any) && 'src' in target) {
+    if (target && target !== (window as unknown) && 'src' in target) {
       console.error('🚨 Resource Loading Error:', target)
       
-      const error = new Error(`Failed to load resource: ${(target as any).src}`)
+      const targetElement = target as HTMLImageElement | HTMLScriptElement | HTMLLinkElement
+      const resourceUrl = 'src' in targetElement && targetElement.src 
+        ? targetElement.src 
+        : 'href' in targetElement ? targetElement.href : 'unknown';
+      const error = new Error(`Failed to load resource: ${resourceUrl}`)
       
       this.reportError(error, {
         component: 'Resource',
@@ -112,8 +116,8 @@ class GlobalErrorHandler {
         metadata: {
           type: 'resource_error',
           tagName: target.tagName,
-          src: (target as any).src,
-          href: (target as any).href
+          src: 'src' in targetElement ? targetElement.src : undefined,
+          href: 'href' in targetElement ? targetElement.href : undefined
         }
       })
 
@@ -173,6 +177,12 @@ class GlobalErrorHandler {
   public captureMessage(message: string, context?: ErrorContext) {
     const error = new Error(message)
     this.reportError(error, context)
+  }
+
+  // Utility method for error reporting with any type
+  public captureException(error: unknown, context?: ErrorContext) {
+    const errorObj = error instanceof Error ? error : new Error(String(error))
+    this.reportError(errorObj, context)
   }
 }
 

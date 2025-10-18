@@ -67,6 +67,7 @@ export const useFileContextStore = create<FileContextStoreWithDexie>()(
       getSelectedFiles: () => {
         const selectedIds = get().selectedFileIds
         // This requires access to the files store
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const filesStore = require('./file-tree.store').useFilesStore.getState()
         
         return selectedIds
@@ -75,6 +76,7 @@ export const useFileContextStore = create<FileContextStoreWithDexie>()(
       },
       
       getFileContent: (id: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const filesStore = require('./file-tree.store').useFilesStore.getState()
         const file = filesStore.getNodeById(id)
         

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { Check, Copy } from "lucide-react"
 import * as React from "react"
 
-interface Props extends React.HTMLAttributes<HTMLPreElement> {}
+type Props = React.HTMLAttributes<HTMLPreElement>
 
 export const CodeBlock = ({ children, className, ...props }: Props) => {
   const textRef = React.useRef<HTMLPreElement>(null)

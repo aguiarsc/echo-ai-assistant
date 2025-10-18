@@ -21,7 +21,12 @@ export async function parseFileIntent(
   try {
     // Build conversation context summary using the message-formatters utility
     const contextSummary = buildConversationContext(
-      conversationHistory as any
+      conversationHistory.map(msg => ({
+        id: crypto.randomUUID(),
+        role: msg.role,
+        content: msg.content,
+        timestamp: Date.now()
+      }))
     );
 
     const response = await generateGeminiResponse({

@@ -125,7 +125,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
               <CardTitle className="text-2xl">Something went wrong</CardTitle>
               <CardDescription className="text-lg">
-                An unexpected error occurred in the application. Don't worry, your data is safe.
+                An unexpected error occurred in the application. Don&apos;t worry, your data is safe.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

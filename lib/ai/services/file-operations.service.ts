@@ -17,7 +17,7 @@ export async function handleFileEdit(
   intent: FileEditIntent,
   apiKey: string,
   model: "gemini-2.5-flash" | "gemini-2.0-flash" | string,
-  generationParams: any,
+  generationParams: Record<string, unknown>,
   findFile: (fileName: string) => FileNode | undefined,
   setEditedContent: (fileId: string, content: string, prompt: string) => void
 ): Promise<FileOperationResult> {
@@ -44,7 +44,7 @@ Edited content (no explanations):`;
 
     const response = await generateGeminiResponse({
       apiKey,
-      model: "gemini-2.5-flash" as any,
+      model: "gemini-2.5-flash",
       messages: [{
         role: "user",
         content: editPrompt,
@@ -87,8 +87,8 @@ Edited content (no explanations):`;
 export async function handleFileCreation(
   intent: FileCreationIntent,
   apiKey: string,
-  model: string | any,
-  generationParams: any,
+  model: "gemini-2.5-flash" | "gemini-2.0-flash",
+  generationParams: Record<string, unknown>,
   createOrGetFile: (fileName: string) => { fileId: string; existed: boolean },
   updateFileContent: (fileId: string, content: string) => void,
   selectedFiles: FileNode[]
@@ -101,7 +101,7 @@ export async function handleFileCreation(
     }
 
     // Enhance the content prompt based on file type
-    let contentPrompt = enhanceContentPrompt(intent.fileName, intent.contentPrompt);
+    const contentPrompt = enhanceContentPrompt(intent.fileName, intent.contentPrompt);
     
     // Create system instruction for clean file content generation
     const fileContentSystemInstruction = createFileCreationInstruction();

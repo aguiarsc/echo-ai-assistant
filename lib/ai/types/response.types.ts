@@ -8,6 +8,6 @@
 export interface ResponseMetadata {
   text: string;
   thinking: string | null;
-  usageMetadata: any;
-  groundingMetadata: any;
+  usageMetadata: unknown;
+  groundingMetadata: unknown;
 }

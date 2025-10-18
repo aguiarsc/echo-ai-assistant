@@ -24,7 +24,7 @@ export default function NotFound() {
           </div>
           <CardTitle className="text-2xl">Page Not Found</CardTitle>
           <CardDescription className="text-lg">
-            The page you're looking for doesn't exist or has been moved.
+            The page you&apos;re looking for doesn&apos;t exist or has been moved.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -32,7 +32,7 @@ export default function NotFound() {
           <div className="bg-muted/50 p-4 rounded-lg text-sm">
             <h4 className="font-semibold mb-2">What happened?</h4>
             <p className="text-muted-foreground mb-3">
-              The URL you entered doesn't match any pages in Echo Novel Assistant. 
+              The URL you entered doesn&apos;t match any pages in Echo Novel Assistant. 
               This could happen if:
             </p>
             <ul className="text-muted-foreground space-y-1">

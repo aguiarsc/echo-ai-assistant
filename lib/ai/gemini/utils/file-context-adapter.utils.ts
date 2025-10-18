@@ -44,6 +44,7 @@ export function generateFileContentText(file: FileContextContent): string {
  */
 export function generateFileContextInstruction(files: FileContextContent[]): string {
   // Re-export from the new location for backward compatibility
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { buildSystemInstruction } = require("./system-instruction-builder.utils")
   return buildSystemInstruction("", files).trim()
 }

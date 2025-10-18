@@ -20,7 +20,7 @@ export function buildThinkingConfig(params: GenerationParams) {
 /**
  * Build tools configuration (e.g., grounding/web search)
  */
-export function buildToolsConfig(params: GenerationParams): any[] | undefined {
+export function buildToolsConfig(params: GenerationParams): Array<{ googleSearch: Record<string, never> }> | undefined {
   if (params.groundingEnabled) {
     return [{ googleSearch: {} }];
   }
@@ -30,8 +30,8 @@ export function buildToolsConfig(params: GenerationParams): any[] | undefined {
 /**
  * Build complete generation configuration
  */
-export function buildGenerationConfig(params: GenerationParams): any {
-  const config: any = {
+export function buildGenerationConfig(params: GenerationParams): Record<string, unknown> {
+  const config: Record<string, unknown> = {
     temperature: params.temperature,
     topP: params.topP,
     topK: params.topK,
@@ -52,7 +52,7 @@ export function buildGenerationConfig(params: GenerationParams): any {
 /**
  * Build chat-specific configuration
  */
-export function buildChatConfig(params: GenerationParams): any {
+export function buildChatConfig(params: GenerationParams): Record<string, unknown> {
   return buildGenerationConfig(params);
 }
 
@@ -62,7 +62,7 @@ export function buildChatConfig(params: GenerationParams): any {
 export function buildContentWithFiles(
   message: string, 
   fileUris?: string[]
-): any {
+): string | Array<{ text?: string; fileData?: { fileUri: string } }> {
   if (fileUris && fileUris.length > 0) {
     return [
       { text: message }, 

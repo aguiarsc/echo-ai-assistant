@@ -75,36 +75,6 @@ export function ChatMessage({ message, isLast, relatedThinking }: MessageProps) 
     return durationSeconds
   })()
 
-  const copyToClipboard = () => {
-    if (!message.content) return;
-    
-    try {
-      // Try to use modern clipboard API first
-      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-        navigator.clipboard.writeText(message.content)
-          .then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-            toast.success("Copied to clipboard");
-          })
-          .catch((err) => {
-            console.error("Modern clipboard API failed:", err);
-            // Fall back to legacy approach
-            useLegacyClipboard();
-          });
-          
-        return; // Early return if modern API is available
-      }
-      
-      // Fall back to legacy approach if modern API isn't available
-      useLegacyClipboard();
-      
-    } catch (err) {
-      console.error("Failed to copy message:", err);
-      toast.error("Failed to copy message");
-    }
-  }
-  
   // Helper function to use legacy clipboard approach 
   const useLegacyClipboard = () => {
     try {
@@ -151,6 +121,36 @@ export function ChatMessage({ message, isLast, relatedThinking }: MessageProps) 
     } catch (error) {
       console.error("Legacy clipboard approach failed:", error);
       toast.error("Unable to copy message");
+    }
+  }
+
+  const copyToClipboard = () => {
+    if (!message.content) return;
+    
+    try {
+      // Try to use modern clipboard API first
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(message.content)
+          .then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+            toast.success("Copied to clipboard");
+          })
+          .catch((err) => {
+            console.error("Modern clipboard API failed:", err);
+            // Fall back to legacy approach
+            useLegacyClipboard();
+          });
+          
+        return; // Early return if modern API is available
+      }
+      
+      // Fall back to legacy approach if modern API isn't available
+      useLegacyClipboard();
+      
+    } catch (err) {
+      console.error("Failed to copy message:", err);
+      toast.error("Failed to copy message");
     }
   }
 

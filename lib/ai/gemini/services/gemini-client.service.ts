@@ -110,9 +110,9 @@ export async function generateGeminiResponse({
         return { text: answer, thinking, usageMetadata: response.usageMetadata, groundingMetadata };
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error generating response:", error);
-    throw new Error(error.message || "Failed to generate response");
+    throw new Error(error instanceof Error ? error.message : "Failed to generate response");
   }
 }
 
@@ -142,8 +142,8 @@ export async function countTokens({
     return {
       totalTokens: response.totalTokens
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error counting tokens:", error);
-    throw new Error(error.message || "Failed to count tokens");
+    throw new Error(error instanceof Error ? error.message : "Failed to count tokens");
   }
 }

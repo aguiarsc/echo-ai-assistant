@@ -15,7 +15,7 @@ class ChatStoreClass implements ChatStore {
   updatedAt!: number;
   avatarUrl?: string;
   systemInstruction?: string;
-  generationParams?: Record<string, any>;
+  generationParams?: Record<string, unknown>;
 
   constructor(init?: Partial<ChatStore>) {
     if (init) Object.assign(this, init);

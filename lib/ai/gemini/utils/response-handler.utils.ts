@@ -15,13 +15,24 @@ import { ResponseMetadata } from "@/lib/ai/types";
  * @returns Accumulated text and metadata
  */
 export function handleStreamChunk(
-  chunk: any,
+  chunk: {
+    usageMetadata?: unknown;
+    candidates?: Array<{
+      groundingMetadata?: unknown;
+      content?: {
+        parts?: Array<{
+          text?: string;
+          thought?: boolean;
+        }>;
+      };
+    }>;
+  },
   onStream?: (responseChunk: string, thinkingChunk: string | null) => void
-): { responseText: string; thinkingText: string; usageMetadata: any; groundingMetadata: any } {
+): { responseText: string; thinkingText: string; usageMetadata: unknown; groundingMetadata: unknown } {
   let responseText = "";
   let thinkingText = "";
-  let usageMetadata = null;
-  let groundingMetadata = null;
+  let usageMetadata: unknown = null;
+  let groundingMetadata: unknown = null;
 
   if (chunk.usageMetadata) {
     usageMetadata = chunk.usageMetadata;
@@ -53,13 +64,24 @@ export function handleStreamChunk(
  * Accumulates all chunks and returns final metadata
  */
 export async function processStreamResponse(
-  stream: AsyncIterable<any>,
+  stream: AsyncIterable<{
+    usageMetadata?: unknown;
+    candidates?: Array<{
+      groundingMetadata?: unknown;
+      content?: {
+        parts?: Array<{
+          text?: string;
+          thought?: boolean;
+        }>;
+      };
+    }>;
+  }>,
   onStream?: (responseChunk: string, thinkingChunk: string | null) => void
 ): Promise<ResponseMetadata> {
   let responseText = "";
   let thinkingText = "";
-  let finalUsageMetadata = null;
-  let groundingMetadata = null;
+  let finalUsageMetadata: unknown = null;
+  let groundingMetadata: unknown = null;
 
   for await (const chunk of stream) {
     const result = handleStreamChunk(chunk, onStream);
@@ -83,12 +105,23 @@ export async function processStreamResponse(
  * Separates thought parts from regular content
  */
 export function extractThinkingAndAnswer(
-  response: any,
+  response: {
+    text?: string;
+    candidates?: Array<{
+      groundingMetadata?: unknown;
+      content?: {
+        parts?: Array<{
+          text?: string;
+          thought?: boolean;
+        }>;
+      };
+    }>;
+  },
   params: GenerationParams
-): { thinking: string | null; answer: string; groundingMetadata: any } {
+): { thinking: string | null; answer: string; groundingMetadata: unknown } {
   let thinking = null;
-  let answer = response.text || "";
-  let groundingMetadata = null;
+  let answer = (response.text as string) || "";
+  let groundingMetadata: unknown = null;
 
   if (params.thinkingEnabled && params.includeSummaries && response.candidates?.[0]?.content?.parts) {
     if (response.candidates?.[0]?.groundingMetadata) {
@@ -106,13 +139,13 @@ export function extractThinkingAndAnswer(
     }
   }
 
-  return { thinking, answer: answer || response.text || "", groundingMetadata };
+  return { thinking, answer: answer || (response.text as string) || "", groundingMetadata };
 }
 
 /**
  * Extract grounding metadata from response candidate
  */
-export function extractGroundingMetadata(candidate: any): any {
+export function extractGroundingMetadata(candidate: { groundingMetadata?: unknown }): unknown {
   return candidate?.groundingMetadata || null;
 }
 

@@ -224,7 +224,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                 <Label htmlFor="format">Format</Label>
                 <Select
                   value={exportFormat}
-                  onValueChange={(value) => setExportFormat(value as any)}
+                  onValueChange={(value) => setExportFormat(value as 'pdf' | 'md' | 'txt' | 'json')}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -348,7 +348,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                     <Label htmlFor="orientation">PDF Orientation</Label>
                     <Select
                       value={pdfOrientation}
-                      onValueChange={(value) => setPdfOrientation(value as any)}
+                      onValueChange={(value) => setPdfOrientation(value as 'portrait' | 'landscape')}
                     >
                       <SelectTrigger>
                         <SelectValue />

@@ -58,7 +58,7 @@ export default function Error({
           </div>
           <CardTitle className="text-2xl">Application Error</CardTitle>
           <CardDescription className="text-lg">
-            Something went wrong with the application. Don't worry, your data is safe and we're working to fix this.
+            Something went wrong with the application. Don&apos;t worry, your data is safe and we&apos;re working to fix this.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -127,7 +127,7 @@ export default function Error({
             </p>
             <h4 className="font-semibold mb-2">What can you do?</h4>
             <ul className="text-muted-foreground space-y-1">
-              <li>• Try the "Try Again" button to retry the operation</li>
+              <li>• Try the &quot;Try Again&quot; button to retry the operation</li>
               <li>• Refresh the page to restart the application</li>
               <li>• Check your internet connection</li>
               <li>• If the problem persists, copy the error details and contact support</li>

@@ -6,7 +6,7 @@
 export interface FileOperation {
   type: FileOperationType
   nodeId: string
-  data?: any
+  data?: unknown
 }
 
 export type FileOperationType = 
