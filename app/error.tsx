@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react'
-import { captureError } from '@/lib/utils/error-handler'
+import { captureError } from '@/lib/shared/services/error-handler.service'
 
 export default function Error({
   error,

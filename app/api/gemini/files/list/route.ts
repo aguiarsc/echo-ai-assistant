@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createGeminiClient } from '@/lib/gemini';
-import { GeminiFilesApi } from '@/lib/gemini/files-api';
+import { createGeminiClient } from '@/lib/ai/gemini/services/gemini-client.service';
+import { GeminiFilesService } from '@/lib/ai/gemini/services/gemini-files.service';
 import { createErrorResponse } from '@/lib/api/helpers';
 
 export async function GET(req: NextRequest) {
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
     // Initialize Gemini client and Files API
     const genAI = createGeminiClient(apiKey);
-    const filesApi = new GeminiFilesApi(genAI);
+    const filesApi = new GeminiFilesService(genAI);
 
     // Get query parameters
     const url = new URL(req.url);

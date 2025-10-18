@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createGeminiClient } from '@/lib/gemini';
-import { GeminiFilesApi } from '@/lib/gemini/files-api';
+import { createGeminiClient } from '@/lib/ai/gemini/services/gemini-client.service';
+import { GeminiFilesService } from '@/lib/ai/gemini/services/gemini-files.service';
 import { createErrorResponse } from '@/lib/api/helpers';
 
 export const runtime = "nodejs";
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     // Initialize Gemini client and Files API
     const genAI = createGeminiClient(apiKey);
-    const filesApi = new GeminiFilesApi(genAI);
+    const filesApi = new GeminiFilesService(genAI);
 
     // Parse the form data with the file
     const formData = await req.formData();
