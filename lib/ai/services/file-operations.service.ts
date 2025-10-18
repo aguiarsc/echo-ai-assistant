@@ -5,6 +5,7 @@
 
 import { FileEditIntent, FileCreationIntent, FileOperationResult } from "@/lib/ai/types";
 import { generateGeminiResponse } from "@/lib/ai/gemini/services/gemini-client.service";
+import { GenerationParams } from "@/lib/ai/gemini/types";
 import { cleanAIContent } from "@/lib/shared/utils/content-cleaner.utils";
 import { createFileEditInstruction, createFileCreationInstruction, buildSystemInstruction } from "@/lib/ai/gemini/utils/system-instruction-builder.utils";
 import { FileNode } from "@/lib/files/types";
@@ -17,7 +18,7 @@ export async function handleFileEdit(
   intent: FileEditIntent,
   apiKey: string,
   model: "gemini-2.5-flash" | "gemini-2.0-flash" | string,
-  generationParams: Record<string, unknown>,
+  generationParams: GenerationParams,
   findFile: (fileName: string) => FileNode | undefined,
   setEditedContent: (fileId: string, content: string, prompt: string) => void
 ): Promise<FileOperationResult> {
@@ -88,7 +89,7 @@ export async function handleFileCreation(
   intent: FileCreationIntent,
   apiKey: string,
   model: "gemini-2.5-flash" | "gemini-2.0-flash",
-  generationParams: Record<string, unknown>,
+  generationParams: GenerationParams,
   createOrGetFile: (fileName: string) => { fileId: string; existed: boolean },
   updateFileContent: (fileId: string, content: string) => void,
   selectedFiles: FileNode[]
