@@ -46,26 +46,26 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
     }
     return `chats-export-${new Date().toISOString().split('T')[0]}`
   })
-  
+
   // Export options
   const [includeThinking, setIncludeThinking] = useState(false)
   const [includeTimestamps, setIncludeTimestamps] = useState(true)
   const [includeTokenCounts, setIncludeTokenCounts] = useState(false)
   const [pdfOrientation, setPdfOrientation] = useState<'portrait' | 'landscape'>('portrait')
   const [selectedChatIds, setSelectedChatIds] = useState<string[]>([])
-  
+
   // Date range filter
   const [useDateRange, setUseDateRange] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  
+
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
 
   const handleExport = async () => {
     try {
       setExporting(true)
-      
+
       const options: ChatExportOptions = {
         format: exportFormat,
         filename,
@@ -82,7 +82,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
           footerText: 'Exported from Echo'
         }
       }
-      
+
       if (chat) {
         // Export single chat
         await exportChat(chat, options)
@@ -92,10 +92,10 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
         })
       } else {
         // Export multiple chats
-        const chatsToExport = selectedChatIds.length > 0 
+        const chatsToExport = selectedChatIds.length > 0
           ? chats.filter(c => selectedChatIds.includes(c.id))
           : chats
-          
+
         if (chatsToExport.length === 0) {
           toast({
             title: "No chats selected",
@@ -104,14 +104,14 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
           })
           return
         }
-        
+
         await exportMultipleChats(chatsToExport, options)
         toast({
           title: "Chats exported successfully",
           description: `Exported ${chatsToExport.length} chat${chatsToExport.length > 1 ? 's' : ''} as ${exportFormat.toUpperCase()}`,
         })
       }
-      
+
       setOpen(false)
     } catch (error) {
       console.error("Export failed", error)
@@ -128,20 +128,20 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    
+
     try {
       setImporting(true)
       const content = await file.text()
       const importedChats = importChatFromJson(content)
-      
+
       // Add imported chats to store
       setChatData([...chats, ...importedChats])
-      
+
       toast({
         title: "Chats imported successfully",
         description: `Imported ${importedChats.length} chat${importedChats.length > 1 ? 's' : ''}`,
       })
-      
+
       setOpen(false)
     } catch (error) {
       console.error("Import failed", error)
@@ -158,8 +158,8 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
   }
 
   const toggleChatSelection = (chatId: string) => {
-    setSelectedChatIds(prev => 
-      prev.includes(chatId) 
+    setSelectedChatIds(prev =>
+      prev.includes(chatId)
         ? prev.filter(id => id !== chatId)
         : [...prev, chatId]
     )
@@ -200,7 +200,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
             {chat ? `Export "${chat.title}"` : "Export/Import Chats"}
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Export Section */}
           <div className="space-y-4">
@@ -208,7 +208,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
               <Download className="h-4 w-4" />
               <h3 className="text-sm font-medium">Export Options</h3>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="filename">Filename</Label>
@@ -219,7 +219,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                   placeholder="Enter filename"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="format">Format</Label>
                 <Select
@@ -238,7 +238,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                 </Select>
               </div>
             </div>
-            
+
             {/* Multi-chat selection */}
             {!chat && (
               <div className="space-y-3">
@@ -263,7 +263,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-1">
                   {chats.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
@@ -290,7 +290,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                     ))
                   )}
                 </div>
-                
+
                 {selectedChatIds.length > 0 && (
                   <p className="text-sm text-muted-foreground">
                     {selectedChatIds.length} chat{selectedChatIds.length > 1 ? 's' : ''} selected
@@ -298,14 +298,14 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                 )}
               </div>
             )}
-            
+
             {/* Export Options */}
             <div className="space-y-3">
               <Label className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Export Settings
               </Label>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -318,7 +318,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                     Include thinking process
                   </Label>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="includeTimestamps"
@@ -330,7 +330,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                     Include timestamps
                   </Label>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="includeTokenCounts"
@@ -342,7 +342,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                     Include token counts
                   </Label>
                 </div>
-                
+
                 {exportFormat === 'pdf' && (
                   <div className="space-y-2">
                     <Label htmlFor="orientation">PDF Orientation</Label>
@@ -362,7 +362,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                 )}
               </div>
             </div>
-            
+
             {/* Date Range Filter */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
@@ -372,7 +372,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                   onCheckedChange={(checked) => setUseDateRange(checked === true)}
                 />
               </div>
-              
+
               {useDateRange && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -397,7 +397,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
               )}
             </div>
           </div>
-          
+
           {/* Import Section */}
           {!chat && (
             <>
@@ -407,7 +407,7 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
                   <Upload className="h-4 w-4" />
                   <h3 className="text-sm font-medium">Import Chats</h3>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="import-file">Import from JSON file</Label>
                   <Input
@@ -425,15 +425,15 @@ export function ChatExport({ chat, variant = 'button', className }: ChatExportPr
             </>
           )}
         </div>
-        
+
         <DialogFooter className="sm:justify-end">
           <DialogClose asChild>
             <Button type="button" variant="secondary">
               Cancel
             </Button>
           </DialogClose>
-          <Button 
-            onClick={handleExport} 
+          <Button
+            onClick={handleExport}
             disabled={exporting || !filename.trim() || (!chat && selectedChatIds.length === 0 && chats.length > 0)}
           >
             {exporting ? "Exporting..." : "Export"}

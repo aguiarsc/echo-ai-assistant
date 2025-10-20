@@ -4,8 +4,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { CustomThemeProvider } from "@/components/themes";
 import { Toaster } from "@/components/ui/sonner";
-import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
-import { ClientErrorHandler } from "@/components/shared/ClientErrorHandler";
 
 
 const geistSans = Geist({
@@ -39,7 +37,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientErrorHandler />
         <CustomThemeProvider>
           <ThemeProvider
             attribute="class"
@@ -47,9 +44,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ErrorBoundary>
-              {children}
-            </ErrorBoundary>
+            {children}
             <Toaster position="top-center" />
           </ThemeProvider>
         </CustomThemeProvider>

@@ -4,7 +4,6 @@ import { ChatSidebar } from "@/components/chat/sidebar/ChatSidebar"
 import { ChatMessageList } from "@/components/chat/messages/ChatMessageList"
 import { Toaster } from "@/components/ui/toaster"
 import { ToastProvider } from "@/components/ui/use-toast"
-import { ErrorBoundary } from "@/components/shared/ErrorBoundary"
 import { useChatStore, initializeDexieStore } from "@/lib/chat/stores/chat.store"
 import { useFilesStore, useFileContextStore } from "@/lib/files/stores"
 import { useToast } from "@/components/ui/use-toast"
@@ -101,13 +100,7 @@ export function ChatLayout() {
   return (
     <ToastProvider>
       <div className="flex h-screen max-h-screen overflow-hidden">
-        <ErrorBoundary
-          onError={(error, errorInfo) => {
-            console.error('Sidebar Error:', error, errorInfo)
-          }}
-        >
-          <ChatSidebar />
-        </ErrorBoundary>
+        <ChatSidebar />
         
         <main className="flex-1 flex flex-col overflow-hidden relative">
           {error && (
@@ -141,13 +134,7 @@ export function ChatLayout() {
             </div>
           )}
           
-          <ErrorBoundary
-            onError={(error, errorInfo) => {
-              console.error('ChatWindow Error:', error, errorInfo)
-            }}
-          >
-            <ChatMessageList />
-          </ErrorBoundary>
+          <ChatMessageList />
         </main>
         
         <Toaster />
